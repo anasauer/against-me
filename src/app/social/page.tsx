@@ -36,7 +36,7 @@ export default function SocialPage() {
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Friends</CardTitle>
+              <CardTitle>Amigos</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {friends.map((friend) => {
@@ -59,7 +59,7 @@ export default function SocialPage() {
                       <span>{friend.name}</span>
                     </div>
                     <Button variant="secondary" size="sm">
-                      Challenge
+                      Retar
                     </Button>
                   </div>
                 );

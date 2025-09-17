@@ -12,46 +12,46 @@ export default function ChallengesPage() {
 
   return (
     <div className="flex flex-col h-full">
-      <AppHeader title="Challenges" />
+      <AppHeader title="Retos" />
       <main className="flex-1 p-4 md:p-6 space-y-6">
         <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold font-headline">Manage Your Quests</h2>
+          <h2 className="text-2xl font-bold font-headline">Gestiona Tus Misiones</h2>
           <Button>
             <PlusCircle className="mr-2 h-4 w-4" />
-            Create Challenge
+            Crear Reto
           </Button>
         </div>
         <Tabs defaultValue="all">
           <TabsList>
-            <TabsTrigger value="all">All</TabsTrigger>
-            <TabsTrigger value="daily">Daily</TabsTrigger>
-            <TabsTrigger value="weekly">Weekly</TabsTrigger>
-            <TabsTrigger value="special">Special</TabsTrigger>
+            <TabsTrigger value="all">Todos</TabsTrigger>
+            <TabsTrigger value="daily">Diarios</TabsTrigger>
+            <TabsTrigger value="weekly">Semanales</TabsTrigger>
+            <TabsTrigger value="special">Especiales</TabsTrigger>
           </TabsList>
           <TabsContent value="all" className="mt-4">
             <ChallengeList
-              title="All Challenges"
+              title="Todos los Retos"
               challenges={challenges}
               showAddButton={false}
             />
           </TabsContent>
           <TabsContent value="daily" className="mt-4">
             <ChallengeList
-              title="Daily Challenges"
+              title="Retos Diarios"
               challenges={daily}
               showAddButton={false}
             />
           </TabsContent>
           <TabsContent value="weekly" className="mt-4">
             <ChallengeList
-              title="Weekly Challenges"
+              title="Retos Semanales"
               challenges={weekly}
               showAddButton={false}
             />
           </TabsContent>
           <TabsContent value="special" className="mt-4">
             <ChallengeList
-              title="Special Challenges"
+              title="Retos Especiales"
               challenges={special}
               showAddButton={false}
             />

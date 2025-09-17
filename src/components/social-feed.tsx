@@ -11,7 +11,7 @@ export function SocialFeed({ activities }: { activities: Activity[] }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Friends Activity</CardTitle>
+        <CardTitle>Actividad de Amigos</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-6">

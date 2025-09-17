@@ -22,11 +22,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getPlaceholderImage } from '@/lib/placeholder-images';
 
 const menuItems = [
-  { href: '/', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/challenges', label: 'Challenges', icon: Target },
-  { href: '/rewards', label: 'Rewards', icon: Gift },
+  { href: '/', label: 'Panel', icon: LayoutDashboard },
+  { href: '/challenges', label: 'Retos', icon: Target },
+  { href: '/rewards', label: 'Recompensas', icon: Gift },
   { href: '/social', label: 'Social', icon: Users },
-  { href: '/suggest', label: 'Suggest', icon: Lightbulb },
+  { href: '/suggest', label: 'Sugerir', icon: Lightbulb },
 ];
 
 export function AppSidebar() {
@@ -47,15 +47,16 @@ export function AppSidebar() {
         <SidebarMenu>
           {menuItems.map((item) => (
             <SidebarMenuItem key={item.label}>
-              <Link href={item.href} legacyBehavior passHref>
-                <SidebarMenuButton
-                  isActive={pathname === item.href}
-                  tooltip={item.label}
-                >
+              <SidebarMenuButton
+                asChild
+                isActive={pathname === item.href}
+                tooltip={item.label}
+              >
+                <Link href={item.href}>
                   <item.icon />
                   <span>{item.label}</span>
-                </SidebarMenuButton>
-              </Link>
+                </Link>
+              </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
@@ -72,9 +73,9 @@ export function AppSidebar() {
             <AvatarFallback>U</AvatarFallback>
           </Avatar>
           <div className="flex flex-col">
-            <span className="font-semibold text-sidebar-foreground">User</span>
+            <span className="font-semibold text-sidebar-foreground">Usuario</span>
             <button className="text-xs text-left text-sidebar-foreground/70 hover:text-sidebar-foreground">
-              Logout
+              Cerrar sesión
             </button>
           </div>
         </div>

@@ -7,24 +7,24 @@ export function StreakCounter() {
     <div className="grid gap-4 md:grid-cols-2">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-sm font-medium">Daily Streak</CardTitle>
+          <CardTitle className="text-sm font-medium">Racha Diaria</CardTitle>
           <Flame className="h-5 w-5 text-primary" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{user.dailyStreak} days</div>
+          <div className="text-2xl font-bold">{user.dailyStreak} días</div>
           <p className="text-xs text-muted-foreground">
-            Keep it up to unlock bonuses!
+            ¡Sigue así para desbloquear bonificaciones!
           </p>
         </CardContent>
       </Card>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-sm font-medium">Weekly Streak</CardTitle>
+          <CardTitle className="text-sm font-medium">Racha Semanal</CardTitle>
           <Zap className="h-5 w-5 text-primary" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{user.weeklyStreak} weeks</div>
-          <p className="text-xs text-muted-foreground">You're on a roll!</p>
+          <div className="text-2xl font-bold">{user.weeklyStreak} semanas</div>
+          <p className="text-xs text-muted-foreground">¡Estás en racha!</p>
         </CardContent>
       </Card>
     </div>

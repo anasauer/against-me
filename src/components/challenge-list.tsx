@@ -36,8 +36,8 @@ export function ChallengeList({
     );
     if (!wasCompleted) {
       toast({
-        title: 'Challenge Completed!',
-        description: `You earned ${challenge.points} points.`,
+        title: '¡Reto Completado!',
+        description: `Has ganado ${challenge.points} puntos.`,
       });
     }
   };
@@ -53,13 +53,13 @@ export function ChallengeList({
           <div className="grid gap-1">
             <CardTitle>{title}</CardTitle>
             <CardDescription>
-              {completedCount} of {challenges.length} completed.
+              {completedCount} de {challenges.length} completados.
             </CardDescription>
           </div>
           {showAddButton && (
             <Button size="sm" variant="outline">
               <PlusCircle className="mr-2 h-4 w-4" />
-              New Challenge
+              Nuevo Reto
             </Button>
           )}
         </div>

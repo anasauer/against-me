@@ -31,7 +31,7 @@ import { useToast } from '@/hooks/use-toast';
 const formSchema = z.object({
   userPreferences: z
     .string()
-    .min(10, "Please describe the user's preferences in more detail."),
+    .min(10, 'Por favor, describe las preferencias del usuario con más detalle.'),
   knownDesires: z.string().optional(),
 });
 
@@ -59,8 +59,8 @@ export function SuggestChallengesForm() {
       console.error(error);
       toast({
         variant: 'destructive',
-        title: 'An error occurred',
-        description: 'Failed to get suggestions. Please try again.',
+        title: 'Ocurrió un error',
+        description: 'No se pudieron obtener sugerencias. Por favor, inténtalo de nuevo.',
       });
     } finally {
       setIsLoading(false);
@@ -71,10 +71,9 @@ export function SuggestChallengesForm() {
     <div className="max-w-2xl mx-auto space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Challenge Suggestion Tool</CardTitle>
+          <CardTitle>Herramienta de Sugerencia de Retos</CardTitle>
           <CardDescription>
-            Describe a friend or partner to get personalized challenge ideas for
-            them.
+            Describe a un amigo o pareja para obtener ideas de retos personalizados para ellos.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -85,10 +84,10 @@ export function SuggestChallengesForm() {
                 name="userPreferences"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>User Preferences</FormLabel>
+                    <FormLabel>Preferencias del Usuario</FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="e.g., Loves hiking, is learning to cook, enjoys reading fantasy novels..."
+                        placeholder="Ej: Le encanta el senderismo, está aprendiendo a cocinar, disfruta leyendo novelas de fantasía..."
                         {...field}
                       />
                     </FormControl>
@@ -101,10 +100,10 @@ export function SuggestChallengesForm() {
                 name="knownDesires"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Known Desires for Rewards</FormLabel>
+                    <FormLabel>Deseos Conocidos de Recompensas</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="e.g., Wants a new pair of running shoes, a fancy dinner..."
+                        placeholder="Ej: Quiere un par de zapatillas nuevas para correr, una cena elegante..."
                         {...field}
                       />
                     </FormControl>
@@ -118,7 +117,7 @@ export function SuggestChallengesForm() {
                 ) : (
                   <Wand2 className="mr-2 h-4 w-4" />
                 )}
-                Suggest Challenges
+                Sugerir Retos
               </Button>
             </form>
           </Form>
@@ -129,7 +128,7 @@ export function SuggestChallengesForm() {
         <Card>
           <CardContent className="p-6 flex items-center justify-center">
             <Loader2 className="mr-2 h-8 w-8 animate-spin text-primary" />
-            <p className="text-muted-foreground">Generating ideas...</p>
+            <p className="text-muted-foreground">Generando ideas...</p>
           </CardContent>
         </Card>
       )}
@@ -137,7 +136,7 @@ export function SuggestChallengesForm() {
       {suggestions && suggestions.challenges.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Suggested Challenges</CardTitle>
+            <CardTitle>Retos Sugeridos</CardTitle>
           </CardHeader>
           <CardContent>
             <ul className="space-y-3">

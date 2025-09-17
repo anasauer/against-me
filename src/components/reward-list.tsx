@@ -19,16 +19,16 @@ export function RewardList({ rewards }: { rewards: Reward[] }) {
   const handleRedeem = (reward: Reward) => {
     if (user.points >= reward.cost) {
       toast({
-        title: 'Reward Redeemed!',
-        description: `You've successfully redeemed "${reward.title}".`,
+        title: '¡Recompensa Canjeada!',
+        description: `Has canjeado "${reward.title}" con éxito.`,
       });
     } else {
       toast({
         variant: 'destructive',
-        title: 'Not enough points!',
-        description: `You need ${
+        title: '¡No hay suficientes puntos!',
+        description: `Necesitas ${
           reward.cost - user.points
-        } more points to redeem this.`,
+        } puntos más para canjear esto.`,
       });
     }
   };
@@ -51,7 +51,7 @@ export function RewardList({ rewards }: { rewards: Reward[] }) {
           <CardContent className="flex-grow" />
           <CardFooter>
             <Button className="w-full" onClick={() => handleRedeem(reward)}>
-              Redeem for {reward.cost.toLocaleString()} pts
+              Canjear por {reward.cost.toLocaleString()} pts
             </Button>
           </CardFooter>
         </Card>

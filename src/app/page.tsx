@@ -14,27 +14,26 @@ export default function HomePage() {
 
   return (
     <div className="flex flex-col h-full">
-      <AppHeader title="Dashboard" />
+      <AppHeader title="Panel" />
       <main className="flex-1 p-4 md:p-6 space-y-6">
         <StreakCounter />
         <div className="grid md:grid-cols-3 gap-6">
           <div className="md:col-span-2">
             <ChallengeList
-              title="Today's Challenges"
+              title="Retos de Hoy"
               challenges={todaysChallenges}
             />
           </div>
           <div className="space-y-6">
             <div className="bg-primary text-primary-foreground p-6 rounded-lg shadow-lg">
-              <h3 className="text-xl font-bold">Claim Your Rewards!</h3>
+              <h3 className="text-xl font-bold">¡Reclama Tus Recompensas!</h3>
               <p className="mt-2 mb-4 text-primary-foreground/80">
-                You have points to spend. Check out the rewards you've set for
-                yourself.
+                Tienes puntos para gastar. Echa un vistazo a las recompensas que has establecido para ti.
               </p>
               <Link href="/rewards">
                 <Button variant="secondary" className="w-full">
                   <Gift className="mr-2 h-4 w-4" />
-                  Go to Rewards
+                  Ir a Recompensas
                 </Button>
               </Link>
             </div>
