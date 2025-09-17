@@ -1,3 +1,40 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "user-avatar-main",
+      "description": "Main user's avatar",
+      "imageUrl": "https://picsum.photos/seed/user-main/100/100",
+      "imageHint": "profile picture"
+    },
+    {
+      "id": "user-avatar-sidebar",
+      "description": "Main user's avatar for sidebar",
+      "imageUrl": "https://picsum.photos/seed/user-sidebar/40/40",
+      "imageHint": "profile picture"
+    },
+    {
+      "id": "jessica-avatar",
+      "description": "Jessica's avatar",
+      "imageUrl": "https://picsum.photos/seed/jessica/40/40",
+      "imageHint": "profile picture"
+    },
+    {
+      "id": "mark-avatar",
+      "description": "Mark's avatar",
+      "imageUrl": "https://picsum.photos/seed/mark/40/40",
+      "imageHint": "profile picture"
+    },
+    {
+      "id": "samantha-avatar",
+      "description": "Samantha's avatar",
+      "imageUrl": "https://picsum.photos/seed/samantha/40/40",
+      "imageHint": "profile picture"
+    },
+    {
+      "id": "david-avatar",
+      "description": "David's avatar",
+      "imageUrl": "https://picsum.photos/seed/david/40/40",
+      "imageHint": "profile picture"
+    }
+  ]
 }
