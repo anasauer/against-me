@@ -53,7 +53,10 @@ export default function HomePage() {
   }
 
   const todaysChallenges = challenges
-    .filter((c) => c.type === 'daily' || c.isCompleted === false)
+    .filter(
+      (c) =>
+        c.isCompleted === false && (c.type === 'daily' || c.type === 'special')
+    )
     .slice(0, 3);
 
   return (
