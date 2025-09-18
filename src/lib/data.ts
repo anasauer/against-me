@@ -122,7 +122,7 @@ export const rewards: Reward[] = [
   {
     id: '3',
     title: 'Cena',
-    description: 'Pide cena de tu restaurante favorito.',
+    description: 'Pide cena de tu lugar favorito.',
     cost: 500,
   },
   {
