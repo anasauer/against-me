@@ -12,6 +12,7 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const SuggestChallengesInputSchema = z.object({
+  targetUser: z.string().describe('The name of the person the challenge is for.'),
   userPreferences: z
     .string()
     .describe('A description of the user preferences.'),
@@ -39,6 +40,7 @@ const prompt = ai.definePrompt({
   output: {schema: SuggestChallengesOutputSchema},
   prompt: `You are a challenge suggestion AI for an app called "Against Me". You will be given a description of a user's preferences. You will then suggest a list of challenges that this user can complete to earn points.
 
+The challenge is for: {{{targetUser}}}.
 If a specific reward is suggested, create challenges that are thematically related to that reward.
 
 User Preferences: {{{userPreferences}}}

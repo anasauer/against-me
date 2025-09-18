@@ -29,6 +29,7 @@ import { Lightbulb, Loader2, Wand2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const formSchema = z.object({
+  targetUser: z.string().min(2, 'Por favor, ingresa un nombre.'),
   userPreferences: z
     .string()
     .min(10, 'Por favor, describe las preferencias del usuario con más detalle.'),
@@ -44,6 +45,7 @@ export function SuggestChallengesForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      targetUser: '',
       userPreferences: '',
       suggestedReward: '',
     },
@@ -79,12 +81,28 @@ export function SuggestChallengesForm() {
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+               <FormField
+                control={form.control}
+                name="targetUser"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>¿Para quién es el reto?</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Ej: Juan, María, mi compañero de piso..."
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <FormField
                 control={form.control}
                 name="userPreferences"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Preferencias del Usuario</FormLabel>
+                    <FormLabel>Preferencias e Intereses</FormLabel>
                     <FormControl>
                       <Textarea
                         placeholder="Ej: Le encanta el senderismo, está aprendiendo a cocinar, disfruta leyendo novelas de fantasía..."
