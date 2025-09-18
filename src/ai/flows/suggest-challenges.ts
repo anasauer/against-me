@@ -37,7 +37,7 @@ const prompt = ai.definePrompt({
   name: 'suggestChallengesPrompt',
   input: {schema: SuggestChallengesInputSchema},
   output: {schema: SuggestChallengesOutputSchema},
-  prompt: `You are a challenge suggestion AI. You will be given a description of a user's preferences, and any known desires they have for a gift or reward. You will then suggest a list of challenges that the user can complete to earn points in the Questify app.
+  prompt: `You are a challenge suggestion AI. You will be given a description of a user's preferences, and any known desires they have for a gift or reward. You will then suggest a list of challenges that the user can complete to earn points in the Against me app.
 
 User Preferences: {{{userPreferences}}}
 

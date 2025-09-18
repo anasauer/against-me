@@ -13,8 +13,8 @@ export function Logo({ className }: { className?: string }) {
       className={cn('w-8 h-8', className)}
     >
       <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2z" />
-      <path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z" />
-      <path d="m15 15 3 3" />
+      <path d="M9 15V9l3 3 3-3v6" />
+      <path d="M6.5 12H9" />
     </svg>
   );
 }

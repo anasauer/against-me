@@ -39,7 +39,7 @@ export function AppSidebar() {
         <div className="flex items-center gap-2">
           <Logo className="w-8 h-8 text-sidebar-primary" />
           <h1 className="text-2xl font-bold text-sidebar-foreground font-headline">
-            Questify
+            Against me
           </h1>
         </div>
       </SidebarHeader>

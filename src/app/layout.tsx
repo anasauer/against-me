@@ -5,7 +5,7 @@ import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/layout/app-sidebar';
 
 export const metadata: Metadata = {
-  title: 'Questify',
+  title: 'Against me',
   description: 'Gamifica tu vida, completa retos y gana recompensas.',
 };
 
