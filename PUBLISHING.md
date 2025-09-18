@@ -1,17 +1,21 @@
 # Guía de Publicación
 
-Esta aplicación está configurada para ser desplegada en Firebase App Hosting.
+Esta aplicación está configurada para ser desplegada en Firebase Hosting.
 
 ## Proceso de Publicación
 
-Para publicar tu aplicación, necesitas tener la [Firebase CLI](https://firebase.google.com/docs/cli) instalada y configurada en tu ordenador. Como hemos eliminado las funciones de IA que requerían un plan de pago, puedes desplegar tu proyecto de forma segura en el **plan gratuito de Firebase (Spark)**.
+Para publicar tu aplicación, necesitas tener la [Firebase CLI](https://firebase.google.com/docs/cli) instalada y configurada en tu ordenador. Puedes desplegar tu proyecto de forma segura en el **plan gratuito de Firebase (Spark)**.
 
-Sigue estos pasos desde tu terminal:
+Sigue estos pasos desde tu terminal, **dentro de la carpeta de tu proyecto**:
 
 1.  **Inicia sesión en Firebase:**
-    Si es la primera vez que usas la CLI, necesitarás iniciar sesión en tu cuenta de Google.
+    Si es la primera vez que usas la CLI, necesitarás iniciar sesión en tu cuenta de Google. Si el comando normal no funciona, usa la segunda opción.
     ```bash
-    firebase login
+    npx firebase login
+    ```
+    O bien:
+    ```bash
+    npx firebase login --no-localhost
     ```
 
 2.  **Construye tu aplicación para producción:**
@@ -23,7 +27,7 @@ Sigue estos pasos desde tu terminal:
 3.  **Despliega en Firebase Hosting:**
     Este comando subirá los archivos de tu aplicación a los servidores de Firebase y la hará pública.
     ```bash
-    firebase deploy
+    npx firebase deploy --only hosting
     ```
 
 Una vez finalizado, la CLI te proporcionará la URL donde tu aplicación estará disponible públicamente (por ejemplo, `https://tu-proyecto.web.app`).
