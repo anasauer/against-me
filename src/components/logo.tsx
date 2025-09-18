@@ -33,7 +33,7 @@ export function Logo({
         <text
           transform="matrix(1 0 0 1 20 120)"
           fill="#2B2BD6"
-          fontFamily="Inter, sans-serif"
+          fontFamily="Outfit, sans-serif"
           fontWeight="bold"
           fontSize="18px"
         >
@@ -68,7 +68,7 @@ export function Logo({
         <text
           transform="matrix(1 0 0 1 20 120)"
           fill="#FFFFFF"
-          fontFamily="Inter, sans-serif"
+          fontFamily="Outfit, sans-serif"
           fontWeight="bold"
           fontSize="18px"
         >
