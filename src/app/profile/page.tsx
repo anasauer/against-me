@@ -1,20 +1,22 @@
 
 'use client';
 
-import Link from 'next/link';
 import { useState } from 'react';
 import { AppHeader } from '@/components/layout/header';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { user } from '@/lib/data';
+import { user as initialUser, setUser } from '@/lib/data';
 import { getPlaceholderImage } from '@/lib/placeholder-images';
 import { HistoryStats } from '@/components/history-stats';
 import { challenges } from '@/lib/data';
+import { EditProfileForm } from '@/components/edit-profile-form';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 
 export default function ProfilePage() {
+  const [user, setUserState] = useState(initialUser);
   const [shareActivity, setShareActivity] = useState(user.shareActivity);
   const userAvatar = getPlaceholderImage('user-avatar-main');
 
@@ -24,6 +26,12 @@ export default function ProfilePage() {
     totalChallenges > 0
       ? Math.round((completedChallenges.length / totalChallenges) * 100)
       : 0;
+  
+  const handleSave = (data: { name: string; avatar: string }) => {
+    const updatedUser = { ...user, name: data.name };
+    setUser(updatedUser); // Update mock data source
+    setUserState(updatedUser); // Update local state
+  };
 
   return (
     <div className="flex flex-col h-full">
@@ -44,7 +52,7 @@ export default function ProfilePage() {
             <p className="text-muted-foreground">Te uniste en 2024</p>
           </CardHeader>
           <CardContent className="text-center">
-            <Button>Editar Perfil</Button>
+            <EditProfileForm user={user} onSave={handleSave} />
           </CardContent>
         </Card>
 

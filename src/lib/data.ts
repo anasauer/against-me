@@ -39,7 +39,17 @@ export type Activity = {
   timestamp: string;
 };
 
-export const user = {
+export type User = {
+  name: string;
+  avatar: string;
+  avatarHint: string;
+  points: number;
+  dailyStreak: number;
+  weeklyStreak: number;
+  shareActivity: boolean;
+};
+
+let user: User = {
   name: 'Alex',
   avatar: getPlaceholderImage('user-avatar-main')?.imageUrl || '',
   avatarHint: getPlaceholderImage('user-avatar-main')?.imageHint || '',
@@ -48,6 +58,13 @@ export const user = {
   weeklyStreak: 2,
   shareActivity: true,
 };
+
+// Exporting the user object and a function to update it to simulate a data source.
+export { user };
+export function setUser(newUser: User) {
+  user = newUser;
+}
+
 
 export const challenges: Challenge[] = [
   {
