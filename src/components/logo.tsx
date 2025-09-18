@@ -18,7 +18,7 @@ export function Logo({
         y="0px"
         viewBox="40 40 100 100"
         xmlSpace="preserve"
-        className={cn('w-8 h-8', forceDark ? 'hidden' : 'dark:hidden', className)}
+        className={cn('w-24 h-24', forceDark ? 'hidden' : 'dark:hidden', className)}
       >
         <g>
           <path
@@ -30,6 +30,15 @@ export function Logo({
             d="M102.7,65.9c-1.7,1.4-3.5,2.8-6.1,3.8C83.3,75,77.7,66.2,75.6,55c-0.4-1.8-0.1-4.5,1.7-4.6 c2.2-0.2,3.3,4.4,4.5,5.8c4.8,5.5,12.6-0.6,16.7-4c3.3-2.7,7-5.9,11-7.7c2.5-1.1,7.1-1.9,10-0.8c4.4,1.7,1.4,4.4-0.3,6.3 C114.6,55.5,108.9,60.8,102.7,65.9z"
           />
         </g>
+        <text
+          transform="matrix(1 0 0 1 20 120)"
+          fill="#2B2BD6"
+          fontFamily="Inter, sans-serif"
+          fontWeight="bold"
+          fontSize="18px"
+        >
+          AGAINST ME
+        </text>
       </svg>
       <svg
         version="1.1"
@@ -41,7 +50,7 @@ export function Logo({
         viewBox="40 40 100 100"
         xmlSpace="preserve"
         className={cn(
-          'w-8 h-8',
+          'w-24 h-24',
           forceDark ? 'block' : 'hidden dark:block',
           className
         )}
@@ -56,6 +65,15 @@ export function Logo({
             d="M102.7,65.9c-1.7,1.4-3.5,2.8-6.1,3.8C83.3,75,77.7,66.2,75.6,55c-0.4-1.8-0.1-4.5,1.7-4.6 c2.2-0.2,3.3,4.4,4.5,5.8c4.8,5.5,12.6-0.6,16.7-4c3.3-2.7,7-5.9,11-7.7c2.5-1.1,7.1-1.9,10-0.8c4.4,1.7,1.4,4.4-0.3,6.3 C114.6,55.5,108.9,60.8,102.7,65.9z"
           />
         </g>
+        <text
+          transform="matrix(1 0 0 1 20 120)"
+          fill="#FFFFFF"
+          fontFamily="Inter, sans-serif"
+          fontWeight="bold"
+          fontSize="18px"
+        >
+          AGAINST ME
+        </text>
       </svg>
     </>
   );
