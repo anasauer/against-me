@@ -16,18 +16,10 @@ export function Logo({
         xmlnsXlink="http://www.w3.org/1999/xlink"
         x="0px"
         y="0px"
-        viewBox="0 0 180 178"
+        viewBox="40 40 100 100"
         xmlSpace="preserve"
         className={cn('w-8 h-8', forceDark ? 'hidden' : 'dark:hidden', className)}
       >
-        <text
-          transform="matrix(1 0 0 1 27.3369 125.0117)"
-          fill="#2B2BD6"
-          fontFamily="Adam-Bold"
-          fontSize="21.2205px"
-        >
-          AGAINST ME
-        </text>
         <g>
           <path
             fill="#2B2BD6"
@@ -46,7 +38,7 @@ export function Logo({
         xmlnsXlink="http://www.w3.org/1999/xlink"
         x="0px"
         y="0px"
-        viewBox="0 0 180 178"
+        viewBox="40 40 100 100"
         xmlSpace="preserve"
         className={cn(
           'w-8 h-8',
@@ -54,14 +46,6 @@ export function Logo({
           className
         )}
       >
-        <text
-          transform="matrix(1 0 0 1 27.3369 125.0117)"
-          fill="#FFFFFF"
-          fontFamily="Adam-Bold"
-          fontSize="21.2205px"
-        >
-          AGAINST ME
-        </text>
         <g>
           <path
             fill="#FFFFFF"
