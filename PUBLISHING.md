@@ -31,3 +31,11 @@ Una vez finalizado, la CLI te proporcionará la URL donde tu aplicación estará
 ## Realizar más modificaciones
 
 Puedes continuar haciendo cambios en tu aplicación usando Firebase Studio. Una vez que hayas terminado y quieras actualizar la versión pública, simplemente repite los pasos 2 y 3.
+
+## Desinstalar la Firebase CLI
+
+Si en algún momento ya no necesitas la Firebase CLI en tu ordenador, puedes desinstalarla fácilmente ejecutando el siguiente comando en tu terminal:
+
+```bash
+npm uninstall -g firebase-tools
+```
