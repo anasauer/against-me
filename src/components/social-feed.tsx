@@ -46,11 +46,11 @@ export function SocialFeed({ activities }: { activities: Activity[] }) {
                 <AvatarFallback>{activity.user.name.charAt(0)}</AvatarFallback>
               </Avatar>
               <div className="flex-1">
-                <p>
+                <p className="text-sm">
                   <span className="font-semibold">{activity.user.name}</span>{' '}
                   {activity.action}
                 </p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   {activity.timestamp}
                 </p>
               </div>
