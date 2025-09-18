@@ -1,3 +1,4 @@
+
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -74,9 +75,9 @@ export function AppSidebar() {
           </Avatar>
           <div className="flex flex-col">
             <span className="font-semibold text-sidebar-foreground">Usuario</span>
-            <button className="text-xs text-left text-sidebar-foreground/70 hover:text-sidebar-foreground">
+            <Link href="/login" className="text-xs text-left text-sidebar-foreground/70 hover:text-sidebar-foreground">
               Cerrar sesión
-            </button>
+            </Link>
           </div>
         </div>
       </SidebarFooter>
