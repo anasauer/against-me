@@ -9,6 +9,17 @@ export type Challenge = {
   isCompleted: boolean;
 };
 
+export type ReceivedChallenge = {
+  id: string;
+  title: string;
+  from: {
+    name: string;
+    avatar: string;
+    avatarHint: string;
+  };
+  reward: string;
+};
+
 export type Reward = {
   id: string;
   title: string;
@@ -79,6 +90,20 @@ export const challenges: Challenge[] = [
     isCompleted: true,
   },
 ];
+
+export const receivedChallenges: ReceivedChallenge[] = [
+  {
+    id: 'rc1',
+    title: 'Ganarme en una partida de ajedrez',
+    from: {
+      name: 'Jessica',
+      avatar: getPlaceholderImage('jessica-avatar')?.imageUrl || '',
+      avatarHint: getPlaceholderImage('jessica-avatar')?.imageHint || '',
+    },
+    reward: 'Te invito a cenar',
+  },
+];
+
 
 export const rewards: Reward[] = [
   {

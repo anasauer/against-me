@@ -3,9 +3,10 @@ import { AppHeader } from '@/components/layout/header';
 import { StreakCounter } from '@/components/streak-counter';
 import { ChallengeList } from '@/components/challenge-list';
 import { SocialFeed } from '@/components/social-feed';
-import { challenges, activities } from '@/lib/data';
+import { challenges, activities, receivedChallenges } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import { Gift } from 'lucide-react';
+import { ReceivedChallengeCard } from '@/components/received-challenge-card';
 
 export default function HomePage() {
   const todaysChallenges = challenges
@@ -17,6 +18,11 @@ export default function HomePage() {
       <AppHeader title="Panel" />
       <main className="flex-1 p-4 md:p-6 space-y-6">
         <StreakCounter />
+        
+        {receivedChallenges.length > 0 && (
+          <ReceivedChallengeCard challenge={receivedChallenges[0]} />
+        )}
+
         <div className="grid md:grid-cols-3 gap-6">
           <div className="md:col-span-2">
             <ChallengeList
