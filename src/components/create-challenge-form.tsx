@@ -39,7 +39,6 @@ const formSchema = z.object({
   title: z.string().min(3, 'El título debe tener al menos 3 caracteres.'),
   description: z.string().optional(),
   points: z.coerce.number().min(1, 'Los puntos deben ser al menos 1.'),
-  type: z.enum(['daily', 'weekly', 'special']),
   recurrence: z.enum(['none', 'daily', 'weekly', 'biweekly', 'monthly']),
 });
 
@@ -58,13 +57,27 @@ export function CreateChallengeForm({ children, onChallengeCreated }: CreateChal
       title: '',
       description: '',
       points: 10,
-      type: 'daily',
       recurrence: 'none',
     },
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    onChallengeCreated(values);
+    let type: 'daily' | 'weekly' | 'special';
+    switch (values.recurrence) {
+      case 'daily':
+        type = 'daily';
+        break;
+      case 'weekly':
+        type = 'weekly';
+        break;
+      default:
+        type = 'special';
+        break;
+    }
+
+    const challengeData = { ...values, type };
+
+    onChallengeCreated(challengeData);
     toast({
       title: '¡Reto Creado!',
       description: `Se ha añadido "${values.title}" a tu lista de retos.`,
@@ -117,28 +130,6 @@ export function CreateChallengeForm({ children, onChallengeCreated }: CreateChal
                   <FormControl>
                     <Input type="number" {...field} />
                   </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-             <FormField
-              control={form.control}
-              name="type"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Tipo de Reto</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecciona un tipo" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="daily">Diario</SelectItem>
-                      <SelectItem value="weekly">Semanal</SelectItem>
-                      <SelectItem value="special">Especial</SelectItem>
-                    </SelectContent>
-                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
