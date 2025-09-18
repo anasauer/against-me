@@ -34,6 +34,7 @@ export const user = {
   points: 1250,
   dailyStreak: 5,
   weeklyStreak: 2,
+  shareActivity: true,
 };
 
 export const challenges: Challenge[] = [

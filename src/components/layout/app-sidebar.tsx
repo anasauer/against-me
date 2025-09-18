@@ -1,4 +1,3 @@
-
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -18,6 +17,7 @@ import {
   Users,
   Lightbulb,
   History,
+  User as UserIcon,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getPlaceholderImage } from '@/lib/placeholder-images';
@@ -30,6 +30,7 @@ const menuItems = [
   { href: '/social', label: 'Social', icon: Users },
   { href: '/history', label: 'Historial', icon: History },
   { href: '/suggest', label: 'Sugerir', icon: Lightbulb },
+  { href: '/profile', label: 'Perfil', icon: UserIcon },
 ];
 
 export function AppSidebar() {
@@ -65,7 +66,7 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarContent>
       <SidebarFooter>
-        <div className="flex items-center gap-3">
+        <Link href="/profile" className="flex items-center gap-3">
           <Avatar>
             {userAvatar && (
               <AvatarImage
@@ -77,11 +78,9 @@ export function AppSidebar() {
           </Avatar>
           <div className="flex flex-col">
             <span className="font-semibold text-sidebar-foreground">Usuario</span>
-            <Link href="/login" className="text-xs text-left text-sidebar-foreground/70 hover:text-sidebar-foreground">
-              Cerrar sesión
-            </Link>
+             <span className="text-xs text-sidebar-foreground/70">Ver Perfil</span>
           </div>
-        </div>
+        </Link>
       </SidebarFooter>
     </Sidebar>
   );
