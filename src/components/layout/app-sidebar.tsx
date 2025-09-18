@@ -16,10 +16,10 @@ import {
   Gift,
   Users,
   Lightbulb,
-  Trophy,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getPlaceholderImage } from '@/lib/placeholder-images';
+import { Logo } from '@/components/logo';
 
 const menuItems = [
   { href: '/', label: 'Panel', icon: LayoutDashboard },
@@ -37,7 +37,7 @@ export function AppSidebar() {
     <Sidebar>
       <SidebarHeader>
         <div className="flex items-center gap-2">
-          <Trophy className="w-8 h-8 text-sidebar-primary" />
+          <Logo className="w-8 h-8 text-sidebar-primary" />
           <h1 className="text-2xl font-bold text-sidebar-foreground font-headline">
             Questify
           </h1>
