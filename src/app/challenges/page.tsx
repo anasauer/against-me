@@ -36,7 +36,7 @@ export default function ChallengesPage() {
         <div className="flex justify-between items-center">
           <h2 className="text-2xl font-bold font-headline">Gestiona Tus Misiones</h2>
            <CreateChallengeForm onChallengeCreated={handleChallengeCreated}>
-            <Button>
+            <Button className="bg-accent text-accent-foreground hover:bg-accent/90">
               <PlusCircle className="mr-2 h-4 w-4" />
               Crear Reto
             </Button>
