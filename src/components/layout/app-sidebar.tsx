@@ -15,7 +15,7 @@ import {
   Target,
   Gift,
   Users,
-  Lightbulb,
+  Swords,
   History,
   User as UserIcon,
 } from 'lucide-react';
@@ -29,7 +29,7 @@ const menuItems = [
   { href: '/rewards', label: 'Recompensas', icon: Gift },
   { href: '/social', label: 'Social', icon: Users },
   { href: '/history', label: 'Historial', icon: History },
-  { href: '/suggest', label: 'Sugerir', icon: Lightbulb },
+  { href: '/challenge-friend', label: 'Retar', icon: Swords },
   { href: '/profile', label: 'Perfil', icon: UserIcon },
 ];
 
