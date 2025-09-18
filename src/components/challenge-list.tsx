@@ -1,3 +1,4 @@
+
 'use client';
 import {
   Card,
@@ -13,31 +14,36 @@ import { PlusCircle, Trash2 } from 'lucide-react';
 import type { Challenge } from '@/lib/data';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export function ChallengeList({
   title,
   challenges,
+  setChallenges,
   showAddButton = true,
   showDeleteButton = true,
 }: {
   title: string;
   challenges: Challenge[];
+  setChallenges?: (challenges: Challenge[] | ((prev: Challenge[]) => Challenge[])) => void;
   showAddButton?: boolean;
   showDeleteButton?: boolean;
 }) {
   const { toast } = useToast();
 
-  const [localChallenges, setLocalChallenges] = useState(challenges);
+  const handleToggle = (challengeId: string) => {
+    const wasCompleted = challenges.find(c => c.id === challengeId)?.isCompleted;
+    const challenge = challenges.find(c => c.id === challengeId);
 
-  const handleToggle = (challenge: Challenge) => {
-    const wasCompleted = challenge.isCompleted;
-    setLocalChallenges(
-      localChallenges.map((c) =>
-        c.id === challenge.id ? { ...c, isCompleted: !c.isCompleted } : c
-      )
-    );
-    if (!wasCompleted) {
+    if (setChallenges) {
+        setChallenges((prev) =>
+        prev.map((c) =>
+          c.id === challengeId ? { ...c, isCompleted: !c.isCompleted } : c
+        )
+      );
+    }
+    
+    if (!wasCompleted && challenge) {
       toast({
         title: '¡Reto Completado!',
         description: `Has ganado ${challenge.points} puntos.`,
@@ -46,7 +52,9 @@ export function ChallengeList({
   };
 
   const handleDelete = (challengeId: string) => {
-    setLocalChallenges(localChallenges.filter((c) => c.id !== challengeId));
+    if (setChallenges) {
+        setChallenges((prev) => prev.filter((c) => c.id !== challengeId));
+    }
     toast({
       title: 'Reto Eliminado',
       description: 'El reto ha sido eliminado de tu lista.',
@@ -54,9 +62,9 @@ export function ChallengeList({
     });
   };
 
-  const completedCount = localChallenges.filter((c) => c.isCompleted).length;
+  const completedCount = challenges.filter((c) => c.isCompleted).length;
   const progress =
-    localChallenges.length > 0 ? (completedCount / localChallenges.length) * 100 : 0;
+    challenges.length > 0 ? (completedCount / challenges.length) * 100 : 0;
 
   return (
     <Card>
@@ -65,7 +73,7 @@ export function ChallengeList({
           <div className="grid gap-1">
             <CardTitle>{title}</CardTitle>
             <CardDescription>
-              {completedCount} de {localChallenges.length} completados.
+              {completedCount} de {challenges.length} completados.
             </CardDescription>
           </div>
           {showAddButton && (
@@ -78,7 +86,7 @@ export function ChallengeList({
         <Progress value={progress} className="mt-2" />
       </CardHeader>
       <CardContent className="space-y-2">
-        {localChallenges.map((challenge) => (
+        {challenges.map((challenge) => (
           <div
             key={challenge.id}
             className={cn(
@@ -92,7 +100,7 @@ export function ChallengeList({
               id={`challenge-${challenge.id}`}
               checked={challenge.isCompleted}
               onCheckedChange={() => {
-                handleToggle(challenge);
+                handleToggle(challenge.id);
               }}
               className="transition-transform active:scale-95"
             />

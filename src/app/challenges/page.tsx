@@ -1,11 +1,18 @@
+
+'use client';
+
 import { AppHeader } from '@/components/layout/header';
 import { ChallengeList } from '@/components/challenge-list';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { challenges } from '@/lib/data';
+import { challenges as initialChallenges } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
+import { useState } from 'react';
+import type { Challenge } from '@/lib/data';
 
 export default function ChallengesPage() {
+  const [challenges, setChallenges] = useState<Challenge[]>(initialChallenges);
+
   const daily = challenges.filter((c) => c.type === 'daily');
   const weekly = challenges.filter((c) => c.type === 'weekly');
   const special = challenges.filter((c) => c.type === 'special');
@@ -32,6 +39,7 @@ export default function ChallengesPage() {
             <ChallengeList
               title="Todos los Retos"
               challenges={challenges}
+              setChallenges={setChallenges}
               showAddButton={false}
             />
           </TabsContent>
@@ -39,6 +47,7 @@ export default function ChallengesPage() {
             <ChallengeList
               title="Retos Diarios"
               challenges={daily}
+              setChallenges={setChallenges}
               showAddButton={false}
             />
           </TabsContent>
@@ -46,6 +55,7 @@ export default function ChallengesPage() {
             <ChallengeList
               title="Retos Semanales"
               challenges={weekly}
+              setChallenges={setChallenges}
               showAddButton={false}
             />
           </TabsContent>
@@ -53,6 +63,7 @@ export default function ChallengesPage() {
             <ChallengeList
               title="Retos Especiales"
               challenges={special}
+              setChallenges={setChallenges}
               showAddButton={false}
             />
           </TabsContent>

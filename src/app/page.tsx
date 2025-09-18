@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -75,7 +76,7 @@ export default function HomePage() {
 
         <div className="grid md:grid-cols-3 gap-6">
           <div className="md:col-span-2">
-            <ChallengeList title="Retos de Hoy" challenges={todaysChallenges} />
+            <ChallengeList title="Retos de Hoy" challenges={todaysChallenges} setChallenges={setChallenges} />
           </div>
           <div className="space-y-6">
             <div className="bg-primary text-primary-foreground p-6 rounded-lg shadow-lg">

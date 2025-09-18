@@ -1,3 +1,4 @@
+
 import { getPlaceholderImage } from './placeholder-images';
 
 export type Challenge = {
@@ -108,26 +109,26 @@ export const receivedChallenges: ReceivedChallenge[] = [
 export const rewards: Reward[] = [
   {
     id: '1',
-    title: 'Noche de Película',
-    description: 'Canjea por una noche de película con palomitas',
+    title: 'Un helado',
+    description: 'Canjea por un helado de tu sabor favorito.',
     cost: 300,
   },
   {
     id: '2',
-    title: 'Nuevo Videojuego',
-    description: 'Un nuevo juego de tu elección',
+    title: 'Auto-regalo de hasta $30.000',
+    description: 'Cómprate algo que quieras, ¡te lo mereces!',
     cost: 2500,
   },
   {
     id: '3',
-    title: 'Cena para Llevar',
-    description: 'Pide cena de tu restaurante favorito',
+    title: 'Cena',
+    description: 'Pide cena de tu restaurante favorito.',
     cost: 500,
   },
   {
     id: '4',
-    title: 'Día Libre',
-    description: 'Tómate un día libre de todas las tareas',
+    title: '2hs de Pase Libre',
+    description: 'Tómate unas horas libres de tareas, chicos y responsabilidades.',
     cost: 1000,
   },
 ];
