@@ -112,7 +112,7 @@ export function ChallengeList({
                 {challenge.description}
               </p>
             </div>
-            <div className="font-semibold text-primary">
+            <div className="font-semibold text-accent-foreground">
               +{challenge.points} pts
             </div>
             {showDeleteButton && (

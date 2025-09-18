@@ -10,7 +10,7 @@
     --card-foreground: 222 84% 4.9%;
     --popover: 210 40% 100%;
     --popover-foreground: 222 84% 4.9%;
-    --primary: 240 69% 50%;
+    --primary: 236 67% 52%;
     --primary-foreground: 210 40% 98%;
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222 84% 4.9%;
@@ -22,8 +22,8 @@
     --destructive-foreground: 0 0% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 240 69% 50%;
-    --chart-1: 240 69% 50%;
+    --ring: 236 67% 52%;
+    --chart-1: 236 67% 52%;
     --chart-2: 145 84% 87%;
     --chart-3: 12 76% 61%;
     --chart-4: 173 58% 39%;
@@ -31,13 +31,13 @@
     --radius: 0.5rem;
 
     /* Sidebar specific colors */
-    --sidebar-background: 240 69% 50%;
+    --sidebar-background: 236 67% 52%;
     --sidebar-foreground: 210 40% 98%;
     --sidebar-primary: 145 84% 87%;
     --sidebar-primary-foreground: 222 84% 4.9%;
-    --sidebar-accent: 240 69% 60%;
+    --sidebar-accent: 236 67% 62%;
     --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 240 69% 45%;
+    --sidebar-border: 236 67% 47%;
     --sidebar-ring: 145 84% 87%;
   }
 
@@ -48,7 +48,7 @@
     --card-foreground: 210 40% 98%;
     --popover: 222 84% 4.9%;
     --popover-foreground: 210 40% 98%;
-    --primary: 240 69% 60%;
+    --primary: 236 67% 52%;
     --primary-foreground: 210 40% 98%;
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
@@ -60,17 +60,17 @@
     --destructive-foreground: 0 0% 98%;
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 240 69% 60%;
+    --ring: 236 67% 52%;
 
     /* Dark Sidebar specific colors */
     --sidebar-background: 222 84% 4.9%;
     --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 240 69% 60%;
+    --sidebar-primary: 236 67% 52%;
     --sidebar-primary-foreground: 210 40% 98%;
     --sidebar-accent: 217.2 32.6% 17.5%;
     --sidebar-accent-foreground: 210 40% 98%;
     --sidebar-border: 217.2 32.6% 17.5%;
-    --sidebar-ring: 240 69% 60%;
+    --sidebar-ring: 236 67% 52%;
   }
 }
 
