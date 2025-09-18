@@ -15,10 +15,10 @@ const SuggestChallengesInputSchema = z.object({
   userPreferences: z
     .string()
     .describe('A description of the user preferences.'),
-  knownDesires: z
+  suggestedReward: z
     .string()
     .optional()
-    .describe('Any known desires the user has for a gift or reward.'),
+    .describe('A specific reward suggested for completing the challenge.'),
 });
 export type SuggestChallengesInput = z.infer<typeof SuggestChallengesInputSchema>;
 
@@ -37,13 +37,15 @@ const prompt = ai.definePrompt({
   name: 'suggestChallengesPrompt',
   input: {schema: SuggestChallengesInputSchema},
   output: {schema: SuggestChallengesOutputSchema},
-  prompt: `You are a challenge suggestion AI. You will be given a description of a user's preferences, and any known desires they have for a gift or reward. You will then suggest a list of challenges that the user can complete to earn points in the Against me app.
+  prompt: `You are a challenge suggestion AI for an app called "Against Me". You will be given a description of a user's preferences. You will then suggest a list of challenges that this user can complete to earn points.
+
+If a specific reward is suggested, create challenges that are thematically related to that reward.
 
 User Preferences: {{{userPreferences}}}
 
-Known Desires: {{{knownDesires}}}
+Suggested Reward: {{{suggestedReward}}}
 
-Challenges:`,
+Based on this, suggest creative and engaging challenges.`,
 });
 
 const suggestChallengesFlow = ai.defineFlow(

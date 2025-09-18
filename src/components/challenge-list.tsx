@@ -68,7 +68,7 @@ export function ChallengeList({
             </CardDescription>
           </div>
           {showAddButton && (
-            <Button size="sm" variant="outline">
+            <Button size="sm" className="bg-accent text-accent-foreground hover:bg-accent/90">
               <PlusCircle className="mr-2 h-4 w-4" />
               Nuevo Reto
             </Button>
@@ -112,7 +112,7 @@ export function ChallengeList({
                 {challenge.description}
               </p>
             </div>
-            <div className="font-semibold text-accent-foreground">
+            <div className="font-semibold text-accent">
               +{challenge.points} pts
             </div>
             {showDeleteButton && (

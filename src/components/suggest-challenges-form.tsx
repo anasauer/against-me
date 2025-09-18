@@ -32,7 +32,7 @@ const formSchema = z.object({
   userPreferences: z
     .string()
     .min(10, 'Por favor, describe las preferencias del usuario con más detalle.'),
-  knownDesires: z.string().optional(),
+  suggestedReward: z.string().optional(),
 });
 
 export function SuggestChallengesForm() {
@@ -45,7 +45,7 @@ export function SuggestChallengesForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       userPreferences: '',
-      knownDesires: '',
+      suggestedReward: '',
     },
   });
 
@@ -73,7 +73,7 @@ export function SuggestChallengesForm() {
         <CardHeader>
           <CardTitle>Herramienta de Sugerencia de Retos</CardTitle>
           <CardDescription>
-            Describe a un amigo o pareja para obtener ideas de retos personalizados para ellos.
+            Describe los gustos de un amigo o pareja para obtener ideas de retos y recompensas personalizadas para esa persona.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -97,13 +97,13 @@ export function SuggestChallengesForm() {
               />
               <FormField
                 control={form.control}
-                name="knownDesires"
+                name="suggestedReward"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Deseos Conocidos de Recompensas</FormLabel>
+                    <FormLabel>Recompensa Sugerida (Opcional)</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="Ej: Quiere un par de zapatillas nuevas para correr, una cena elegante..."
+                        placeholder="Ej: Un par de zapatillas nuevas, una cena elegante, un día de spa..."
                         {...field}
                       />
                     </FormControl>

@@ -1,3 +1,4 @@
+'use client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Flame, Zap } from 'lucide-react';
 import { user } from '@/lib/data';
@@ -8,7 +9,7 @@ export function StreakCounter() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle className="text-sm font-medium">Racha Diaria</CardTitle>
-          <Flame className="h-5 w-5 text-accent-foreground" />
+          <Flame className="h-5 w-5 text-accent" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{user.dailyStreak} días</div>
@@ -20,7 +21,7 @@ export function StreakCounter() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle className="text-sm font-medium">Racha Semanal</CardTitle>
-          <Zap className="h-5 w-5 text-accent-foreground" />
+          <Zap className="h-5 w-5 text-accent" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{user.weeklyStreak} semanas</div>
