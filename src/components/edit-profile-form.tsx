@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -25,7 +25,6 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { getPlaceholderImage } from '@/lib/placeholder-images';
 import { useToast } from '@/hooks/use-toast';
 import type { User } from '@/lib/data';
 
@@ -36,8 +35,9 @@ const formSchema = z.object({
 
 export function EditProfileForm({ user, onSave }: { user: User, onSave: (data: z.infer<typeof formSchema>) => void }) {
   const [open, setOpen] = useState(false);
+  const [preview, setPreview] = useState(user.avatar);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
-  const userAvatar = getPlaceholderImage('user-avatar-main');
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -46,6 +46,19 @@ export function EditProfileForm({ user, onSave }: { user: User, onSave: (data: z
       avatar: user.avatar,
     },
   });
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const result = reader.result as string;
+        setPreview(result);
+        form.setValue('avatar', result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     console.log('Saving profile with values:', values);
@@ -56,9 +69,18 @@ export function EditProfileForm({ user, onSave }: { user: User, onSave: (data: z
     });
     setOpen(false);
   }
+  
+  // Reset form and preview when dialog is closed
+  const onOpenChange = (isOpen: boolean) => {
+    if (!isOpen) {
+      form.reset({ name: user.name, avatar: user.avatar });
+      setPreview(user.avatar);
+    }
+    setOpen(isOpen);
+  };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
         <Button>Editar Perfil</Button>
       </DialogTrigger>
@@ -70,15 +92,23 @@ export function EditProfileForm({ user, onSave }: { user: User, onSave: (data: z
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <div className="flex flex-col items-center space-y-4">
                <Avatar className="w-24 h-24">
-                {userAvatar && (
+                {preview && (
                     <AvatarImage
-                    src={userAvatar.imageUrl}
-                    data-ai-hint={userAvatar.imageHint}
+                    src={preview}
                     />
                 )}
                 <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
                 </Avatar>
-              <Button type="button" variant="outline">Cambiar Foto</Button>
+              <Input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+              />
+              <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
+                Cambiar Foto
+              </Button>
             </div>
             <FormField
               control={form.control}

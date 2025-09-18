@@ -8,7 +8,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { user as initialUser, setUser } from '@/lib/data';
-import { getPlaceholderImage } from '@/lib/placeholder-images';
 import { HistoryStats } from '@/components/history-stats';
 import { challenges } from '@/lib/data';
 import { EditProfileForm } from '@/components/edit-profile-form';
@@ -18,7 +17,6 @@ import { Button } from '@/components/ui/button';
 export default function ProfilePage() {
   const [user, setUserState] = useState(initialUser);
   const [shareActivity, setShareActivity] = useState(user.shareActivity);
-  const userAvatar = getPlaceholderImage('user-avatar-main');
 
   const completedChallenges = challenges.filter((c) => c.isCompleted);
   const totalChallenges = challenges.length;
@@ -28,7 +26,7 @@ export default function ProfilePage() {
       : 0;
   
   const handleSave = (data: { name: string; avatar: string }) => {
-    const updatedUser = { ...user, name: data.name };
+    const updatedUser = { ...user, name: data.name, avatar: data.avatar };
     setUser(updatedUser); // Update mock data source
     setUserState(updatedUser); // Update local state
   };
@@ -40,10 +38,9 @@ export default function ProfilePage() {
         <Card>
           <CardHeader className="flex flex-col items-center text-center">
             <Avatar className="w-24 h-24 mb-4">
-              {userAvatar && (
+              {user.avatar && (
                 <AvatarImage
-                  src={userAvatar.imageUrl}
-                  data-ai-hint={userAvatar.imageHint}
+                  src={user.avatar}
                 />
               )}
               <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
