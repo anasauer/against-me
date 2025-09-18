@@ -17,6 +17,7 @@ import {
   Gift,
   Users,
   Lightbulb,
+  History,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getPlaceholderImage } from '@/lib/placeholder-images';
@@ -27,6 +28,7 @@ const menuItems = [
   { href: '/challenges', label: 'Retos', icon: Target },
   { href: '/rewards', label: 'Recompensas', icon: Gift },
   { href: '/social', label: 'Social', icon: Users },
+  { href: '/history', label: 'Historial', icon: History },
   { href: '/suggest', label: 'Sugerir', icon: Lightbulb },
 ];
 

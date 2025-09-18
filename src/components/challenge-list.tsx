@@ -10,7 +10,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Progress } from '@/components/ui/progress';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, Trash2 } from 'lucide-react';
 import type { Challenge } from '@/lib/data';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
@@ -19,10 +19,12 @@ export function ChallengeList({
   title,
   challenges: initialChallenges,
   showAddButton = true,
+  showDeleteButton = true,
 }: {
   title: string;
   challenges: Challenge[];
   showAddButton?: boolean;
+  showDeleteButton?: boolean;
 }) {
   const [challenges, setChallenges] = useState(initialChallenges);
   const { toast } = useToast();
@@ -40,6 +42,15 @@ export function ChallengeList({
         description: `Has ganado ${challenge.points} puntos.`,
       });
     }
+  };
+
+  const handleDelete = (challengeId: string) => {
+    setChallenges(challenges.filter((c) => c.id !== challengeId));
+    toast({
+      title: 'Reto Eliminado',
+      description: 'El reto ha sido eliminado de tu lista.',
+      variant: 'destructive',
+    });
   };
 
   const completedCount = challenges.filter((c) => c.isCompleted).length;
@@ -71,7 +82,9 @@ export function ChallengeList({
             key={challenge.id}
             className={cn(
               'flex items-center gap-4 p-3 rounded-lg transition-colors',
-              challenge.isCompleted ? 'bg-muted/50' : 'bg-background hover:bg-muted/50'
+              challenge.isCompleted
+                ? 'bg-muted/50'
+                : 'bg-background hover:bg-muted/50'
             )}
           >
             <Checkbox
@@ -102,6 +115,16 @@ export function ChallengeList({
             <div className="font-semibold text-primary">
               +{challenge.points} pts
             </div>
+            {showDeleteButton && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => handleDelete(challenge.id)}
+                aria-label="Eliminar reto"
+              >
+                <Trash2 className="h-4 w-4 text-destructive" />
+              </Button>
+            )}
           </div>
         ))}
       </CardContent>
