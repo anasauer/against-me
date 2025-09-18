@@ -2,27 +2,20 @@
 
 Esta aplicación está configurada para ser desplegada en Firebase App Hosting.
 
-## ¿Por qué se necesita una cuenta de facturación?
-
-Es una duda muy válida. Tu proyecto utiliza funciones de Inteligencia Artificial a través de Genkit, las cuales dependen de servicios avanzados de Google Cloud. Para habilitar estas funciones, tu proyecto de Firebase debe estar en el **plan Blaze (pago por uso)**.
-
-**¡Importante! Esto no significa que empezarás a pagar inmediatamente.**
-
-*   **Capa gratuita incluida:** El plan Blaze incluye la misma capa gratuita generosa que el plan gratuito (Spark). Para una aplicación como esta, es muy probable que tu uso se mantenga dentro de los límites gratuitos durante mucho tiempo, por lo que no tendrías costos.
-*   **Requisito para escalar:** Vincular una cuenta de facturación es el requisito para poder superar la capa gratuita si tu app crece mucho en el futuro y para usar servicios avanzados como las APIs de IA.
-*   **Tú tienes el control:** La facturación se gestiona en tu cuenta de Google Cloud. Puedes y deberías configurar **alertas de presupuesto** para recibir notificaciones y evitar cualquier costo inesperado. Firebase Studio no almacena ni gestiona tu información de facturación.
-
 ## Proceso de Publicación
 
-Para publicar tu aplicación, necesitas tener la [Firebase CLI](https://firebase.google.com/docs/cli) instalada y configurada.
+Para publicar tu aplicación, necesitas tener la [Firebase CLI](https://firebase.google.com/docs/cli) instalada y configurada en tu ordenador. Como hemos eliminado las funciones de IA que requerían un plan de pago, puedes desplegar tu proyecto de forma segura en el **plan gratuito de Firebase (Spark)**.
+
+Sigue estos pasos desde tu terminal:
 
 1.  **Inicia sesión en Firebase:**
+    Si es la primera vez que usas la CLI, necesitarás iniciar sesión en tu cuenta de Google.
     ```bash
     firebase login
     ```
 
 2.  **Construye tu aplicación para producción:**
-    Este comando creará una versión optimizada de tu aplicación en la carpeta `.next`.
+    Este comando creará una versión optimizada de tu aplicación en la carpeta `.next`, que es lo que se subirá a Firebase.
     ```bash
     npm run build
     ```
@@ -33,7 +26,7 @@ Para publicar tu aplicación, necesitas tener la [Firebase CLI](https://firebase
     firebase deploy
     ```
 
-La CLI te proporcionará la URL donde tu aplicación estará disponible públicamente.
+Una vez finalizado, la CLI te proporcionará la URL donde tu aplicación estará disponible públicamente (por ejemplo, `https://tu-proyecto.web.app`).
 
 ## Realizar más modificaciones
 
