@@ -1,6 +1,12 @@
 import { cn } from '@/lib/utils';
 
-export function Logo({ className }: { className?: string }) {
+export function Logo({
+  className,
+  forceDark = false,
+}: {
+  className?: string;
+  forceDark?: boolean;
+}) {
   return (
     <>
       <svg
@@ -12,7 +18,7 @@ export function Logo({ className }: { className?: string }) {
         y="0px"
         viewBox="0 0 180 178"
         xmlSpace="preserve"
-        className={cn('w-8 h-8 dark:hidden', className)}
+        className={cn('w-8 h-8', forceDark ? 'hidden' : 'dark:hidden', className)}
       >
         <text
           transform="matrix(1 0 0 1 27.3369 125.0117)"
@@ -42,7 +48,11 @@ export function Logo({ className }: { className?: string }) {
         y="0px"
         viewBox="0 0 180 178"
         xmlSpace="preserve"
-        className={cn('w-8 h-8 hidden dark:block', className)}
+        className={cn(
+          'w-8 h-8',
+          forceDark ? 'block' : 'hidden dark:block',
+          className
+        )}
       >
         <text
           transform="matrix(1 0 0 1 27.3369 125.0117)"

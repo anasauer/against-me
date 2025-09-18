@@ -41,7 +41,7 @@ export function AppSidebar() {
     <Sidebar>
       <SidebarHeader>
         <div className="flex items-center gap-2">
-          <Logo className="w-8 h-8 text-sidebar-accent" />
+          <Logo className="w-8 h-8" forceDark />
           <h1 className="text-2xl font-bold text-sidebar-foreground font-headline">
             Against me
           </h1>
