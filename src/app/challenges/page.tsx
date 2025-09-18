@@ -9,13 +9,25 @@ import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
 import { useState } from 'react';
 import type { Challenge } from '@/lib/data';
+import { CreateChallengeForm } from '@/components/create-challenge-form';
 
 export default function ChallengesPage() {
   const [challenges, setChallenges] = useState<Challenge[]>(initialChallenges);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const daily = challenges.filter((c) => c.type === 'daily');
   const weekly = challenges.filter((c) => c.type === 'weekly');
   const special = challenges.filter((c) => c.type === 'special');
+
+  const handleChallengeCreated = (newChallenge: Omit<Challenge, 'id' | 'isCompleted'>) => {
+    const challengeToAdd: Challenge = {
+      ...newChallenge,
+      id: `challenge-${Date.now()}`,
+      isCompleted: false,
+    };
+    setChallenges(prev => [challengeToAdd, ...prev]);
+  };
+
 
   return (
     <div className="flex flex-col h-full">
@@ -23,10 +35,12 @@ export default function ChallengesPage() {
       <main className="flex-1 p-4 md:p-6 space-y-6">
         <div className="flex justify-between items-center">
           <h2 className="text-2xl font-bold font-headline">Gestiona Tus Misiones</h2>
-          <Button>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Crear Reto
-          </Button>
+           <CreateChallengeForm onChallengeCreated={handleChallengeCreated}>
+            <Button>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Crear Reto
+            </Button>
+          </CreateChallengeForm>
         </div>
         <Tabs defaultValue="all">
           <TabsList>

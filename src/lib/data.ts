@@ -8,6 +8,7 @@ export type Challenge = {
   points: number;
   type: 'daily' | 'weekly' | 'special';
   isCompleted: boolean;
+  recurrence?: 'none' | 'daily' | 'weekly' | 'biweekly' | 'monthly';
 };
 
 export type ReceivedChallenge = {
@@ -74,6 +75,7 @@ export const challenges: Challenge[] = [
     points: 50,
     type: 'daily',
     isCompleted: true,
+    recurrence: 'daily',
   },
   {
     id: '2',
@@ -82,6 +84,7 @@ export const challenges: Challenge[] = [
     points: 20,
     type: 'daily',
     isCompleted: false,
+    recurrence: 'daily',
   },
   {
     id: '3',
@@ -90,6 +93,7 @@ export const challenges: Challenge[] = [
     points: 200,
     type: 'weekly',
     isCompleted: false,
+    recurrence: 'weekly',
   },
   {
     id: '4',
@@ -98,6 +102,7 @@ export const challenges: Challenge[] = [
     points: 100,
     type: 'special',
     isCompleted: false,
+    recurrence: 'none',
   },
   {
     id: '5',
@@ -106,6 +111,7 @@ export const challenges: Challenge[] = [
     points: 30,
     type: 'daily',
     isCompleted: true,
+    recurrence: 'daily',
   },
 ];
 
