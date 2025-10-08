@@ -24,9 +24,18 @@
         "weeklyStreak": {
           "type": "number",
           "description": "Current weekly challenge completion streak."
+        },
+        "friends": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of friend user IDs."
         }
       },
-      "required": ["name"]
+      "required": [
+        "name"
+      ]
     },
     "challenge": {
       "title": "Challenge",
@@ -47,7 +56,11 @@
         },
         "type": {
           "type": "string",
-          "enum": ["daily", "weekly", "special"]
+          "enum": [
+            "daily",
+            "weekly",
+            "special"
+          ]
         },
         "isCompleted": {
           "type": "boolean"
@@ -57,7 +70,13 @@
           "description": "The ID of the user this challenge belongs to."
         }
       },
-      "required": ["title", "points", "type", "isCompleted", "userId"]
+      "required": [
+        "title",
+        "points",
+        "type",
+        "isCompleted",
+        "userId"
+      ]
     },
     "friendRequest": {
       "title": "Friend Request",
@@ -68,13 +87,25 @@
           "type": "string",
           "description": "The UID of the user sending the request."
         },
+        "senderName": {
+          "type": "string",
+          "description": "The name of the user sending the request."
+        },
+        "senderAvatar": {
+          "type": "string",
+          "description": "The avatar of the user sending the request."
+        },
         "receiverId": {
           "type": "string",
           "description": "The UID of the user receiving the request."
         },
         "status": {
           "type": "string",
-          "enum": ["pending", "accepted", "declined"],
+          "enum": [
+            "pending",
+            "accepted",
+            "declined"
+          ],
           "description": "The current status of the friend request."
         },
         "createdAt": {
@@ -83,11 +114,19 @@
           "description": "The timestamp when the request was created."
         }
       },
-      "required": ["senderId", "receiverId", "status", "createdAt"]
+      "required": [
+        "senderId",
+        "receiverId",
+        "status",
+        "createdAt"
+      ]
     }
   },
   "auth": {
-    "providers": ["email", "google"]
+    "providers": [
+      "email",
+      "google"
+    ]
   },
   "firestore": {
     "/users/{userId}": {

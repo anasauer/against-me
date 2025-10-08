@@ -78,12 +78,14 @@ export default function AddFriendPage() {
   };
 
   const handleSendRequest = async (receiverId: string) => {
-    if (!currentUser) return;
+    if (!currentUser || !currentUser.displayName) return;
     try {
       const requestsRef = collection(firestore, 'friendRequests');
-      // TODO: Check if a request already exists
+      // TODO: Check if a request already exists or if they are already friends
       await addDoc(requestsRef, {
         senderId: currentUser.uid,
+        senderName: currentUser.displayName,
+        senderAvatar: currentUser.photoURL || '',
         receiverId: receiverId,
         status: 'pending',
         createdAt: serverTimestamp(),
