@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -30,6 +30,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useUser, useFirestore, useDoc, useCollection } from '@/firebase';
+import { doc, collection, query, where, documentId } from 'firebase/firestore';
+import type { UserProfile } from '@/lib/types';
+import Link from 'next/link';
+
 
 const formSchema = z.object({
   friend: z.string().min(1, 'Por favor, selecciona un amigo.'),
@@ -38,17 +43,25 @@ const formSchema = z.object({
   reward: z.string().min(2, 'Por favor, especifica una recompensa.'),
 });
 
-// Mock friends list - in a real app, this would come from an API
-const friends = [
-  { id: 'jessica', name: 'Jessica' },
-  { id: 'mark', name: 'Mark' },
-  { id: 'samantha', name: 'Samantha' },
-  { id: 'david', name: 'David' },
-];
-
 export function ChallengeFriendForm() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { user: currentUser } = useUser();
+  const firestore = useFirestore();
+
+  const userDocRef = useMemo(
+    () => (currentUser ? doc(firestore, 'users', currentUser.uid) : null),
+    [currentUser, firestore]
+  );
+  const { data: userData } = useDoc<{ friends?: string[] }>(userDocRef);
+  const friendIds = userData?.friends || [];
+
+  const friendsQuery = useMemo(() => {
+    if (!firestore || friendIds.length === 0) return null;
+    return query(collection(firestore, 'users'), where(documentId(), 'in', friendIds));
+  }, [firestore, friendIds]);
+
+  const { data: friends, loading: friendsLoading } = useCollection<UserProfile & {id: string}>(friendsQuery);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -70,7 +83,7 @@ export function ChallengeFriendForm() {
     toast({
       title: '¡Reto Enviado!',
       description: `Has retado a ${
-        friends.find((f) => f.id === values.friend)?.name
+        friends?.find((f) => f.id === values.friend)?.name
       } a completar "${values.title}".`,
     });
     
@@ -88,6 +101,18 @@ export function ChallengeFriendForm() {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {friendsLoading ? (
+             <div className="flex justify-center items-center h-24">
+                <Loader2 className="h-6 w-6 animate-spin" />
+            </div>
+          ) : !friends || friends.length === 0 ? (
+            <div className="text-center text-muted-foreground py-4">
+              <p className="mb-4">No tienes amigos para retar todavía.</p>
+              <Button asChild>
+                <Link href="/add-friend">Buscar Amigos</Link>
+              </Button>
+            </div>
+          ) : (
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
@@ -164,6 +189,7 @@ export function ChallengeFriendForm() {
               </Button>
             </form>
           </Form>
+          )}
         </CardContent>
       </Card>
     </div>
