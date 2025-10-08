@@ -16,7 +16,7 @@ import { Logo } from '@/components/logo';
 import { useAuth, useUser, useFirestore } from '@/firebase';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 
@@ -31,6 +31,9 @@ export default function SignupPage() {
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const isPasswordValid = useMemo(() => password.length >= 6, [password]);
+  const canSubmit = name && email && isPasswordValid && !isSubmitting;
+
   useEffect(() => {
     if (!loading && user) {
       router.push('/');
@@ -39,7 +42,7 @@ export default function SignupPage() {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!auth || !firestore) return;
+    if (!auth || !firestore || !canSubmit) return;
     setIsSubmitting(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(
@@ -141,8 +144,13 @@ export default function SignupPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={isSubmitting}
                 />
+                 {password.length > 0 && !isPasswordValid && (
+                  <p className="text-xs text-destructive">
+                    La contraseña debe tener al menos 6 caracteres.
+                  </p>
+                )}
               </div>
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
+              <Button type="submit" className="w-full" disabled={!canSubmit}>
                 {isSubmitting && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 )}
