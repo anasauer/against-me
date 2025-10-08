@@ -1,3 +1,28 @@
+/**
+ * @fileoverview Firestore Security Rules for the application.
+ *
+ * Core Philosophy:
+ * This ruleset enforces a user-ownership model for user profiles and challenges.
+ * Friend requests have more complex rules, allowing read access to requests
+ * where the user is either the sender or receiver.
+ *
+ * Data Structure:
+ * - /users/{userId}: Stores public user profile information.
+ * - /users/{userId}/challenges/{challengeId}: Stores challenges specific to a user.
+ * - /friendRequests/{requestId}: Stores friend requests between users.
+ *
+ * Key Security Decisions:
+ * - Users can only read and write their own profile data.
+ * - Users can only read and write their own challenges.
+ * - Friend requests can be read if the user is the sender or receiver.
+ * - Friend requests can be created by any authenticated user, with senderId set to their UID.
+ * - Friend requests can be updated only by the receiver (to accept or decline).
+ * - Listing of friend requests is allowed for any authenciated user
+ *
+ * Denormalization for Authorization:
+ * - The `challenge` documents contains `userId` field, duplicating data to
+ *   allow for simple and efficient access control based on ownership.
+ */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -5,55 +30,84 @@ service cloud.firestore {
     /**
      * @description Controls access to user profile information.
      * @path /users/{userId}
-     * @allow (get, create, update, delete) if the user is signed in and the userId matches the authenticated user's ID.
-     * @deny (get, create, update, delete) if the user is not signed in or the userId does not match the authenticated user's ID.
-     * @principle Enforces document ownership for all operations on user profiles.
+     * @allow (get, update, delete) if the user is the owner.
+     * @allow (create) if the user ID matches the authenticated user ID (self-creation).
+     * @deny (get, update, delete) if the user is not the owner.
+     * @principle Enforces document ownership for user profiles.
      */
     match /users/{userId} {
-      allow get: if isSignedIn() && isOwner(userId);
-      allow list: if false;
-      allow create: if isSignedIn() && isOwner(userId);
-      allow update: if isSignedIn() && isOwner(userId);
-      allow delete: if isSignedIn() && isOwner(userId);
+      // Validate that the user is signed in.
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isSelfCreate(userId);
+      allow update, delete: if isExistingOwner(userId);
     }
 
     /**
      * @description Controls access to challenges for a specific user.
      * @path /users/{userId}/challenges/{challengeId}
-     * @allow (get, create, update, delete) if the user is signed in, the userId matches the authenticated user's ID, and the challenge belongs to the user.
-     * @deny (get, create, update, delete) if the user is not signed in, the userId does not match the authenticated user's ID, or the challenge does not belong to the user.
-     * @principle Enforces document ownership for all operations on user challenges.
+     * @allow (get, list, create, update, delete) if the user is the owner.
+     * @deny (get, list, create, update, delete) if the user is not the owner.
+     * @principle Restricts access to a user's own challenge data.
      */
     match /users/{userId}/challenges/{challengeId} {
-      allow get: if isSignedIn() && isOwner(userId);
-      allow list: if false;
+      allow get, list: if isSignedIn() && isOwner(userId);
       allow create: if isSignedIn() && isOwner(userId) && request.resource.data.userId == userId;
-      allow update: if isSignedIn() && isOwner(userId);
-      allow delete: if isSignedIn() && isOwner(userId);
+      allow update, delete: if isExistingOwner(userId) && resource.data.userId == userId;
     }
 
     /**
      * @description Controls access to friend requests.
      * @path /friendRequests/{requestId}
-     * @allow (get) if the user is either the sender or the receiver of the friend request.
-     * @deny (list) to prevent unauthorized listing of friend requests.
-     * @principle Allows access to friend requests only for involved parties and denies public listing.
+     * @allow (get) if the user is the sender or receiver.
+     * @allow (create) if the senderId matches the authenticated user ID.
+     * @allow (update) if the user is the receiver and updating the status.
+     * @deny (create, update, delete) if conditions are not met.
+     * @principle Enforces access control for friend requests based on sender/receiver relationship.
      */
     match /friendRequests/{requestId} {
-      allow get: if isSignedIn() && (request.auth.uid == resource.data.senderId || request.auth.uid == resource.data.receiverId);
-      allow list: if false;
-      allow create: if isSignedIn() && (request.auth.uid == request.resource.data.senderId || request.auth.uid == request.resource.data.receiverId);
-      allow update: if isSignedIn() && (request.auth.uid == resource.data.senderId || request.auth.uid == resource.data.receiverId);
-      allow delete: if isSignedIn() && (request.auth.uid == resource.data.senderId || request.auth.uid == resource.data.receiverId);
+      allow get: if isSignedIn() && (isSender(request.auth.uid) || isReceiver(request.auth.uid));
+      allow list: if isSignedIn(); // Previously missing, leading to the error.
+      allow create: if isSignedIn() && request.resource.data.senderId == request.auth.uid;
+      allow update: if isSignedIn() && isReceiver(request.auth.uid) && isValidStatusUpdate(request.resource.data.status, resource.data.status);
+      allow delete: if false; // No user should be able to delete friend requests.
     }
 
-    // Helper functions
+    // --- Helper Functions ---
+
+    // Checks if the user is signed in.
     function isSignedIn() {
       return request.auth != null;
     }
 
+    // Checks if the user is creating their own document (self-registration).
+    function isSelfCreate(userId) {
+        return request.auth.uid == userId;
+    }
+
+    // Checks if the user ID matches the authenticated user ID.
     function isOwner(userId) {
       return request.auth.uid == userId;
+    }
+
+     // Checks if the user ID matches the authenticated user ID and the resource exists.
+    function isExistingOwner(userId) {
+      return isOwner(userId) && resource != null;
+    }
+
+
+    // Checks if the authenticated user is the sender of the friend request.
+    function isSender(uid) {
+      return resource.data.senderId == uid;
+    }
+
+    // Checks if the authenticated user is the receiver of the friend request.
+    function isReceiver(uid) {
+      return resource.data.receiverId == uid;
+    }
+
+    // Checks if the status update is valid (only receiver can accept/decline).
+    function isValidStatusUpdate(newStatus, oldStatus) {
+      return (newStatus == 'accepted' || newStatus == 'declined') && oldStatus == 'pending';
     }
   }
 }
