@@ -1,13 +1,12 @@
 'use client';
 
-import { AuthGuard } from '@/components/auth-guard';
 import { AppHeader } from '@/components/layout/header';
 import { RewardList } from '@/components/reward-list';
 import { rewards } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
 
-function RewardsPageContent() {
+export default function RewardsPage() {
   return (
     <div className="flex flex-col h-full">
       <AppHeader title="Recompensas" />
@@ -22,13 +21,5 @@ function RewardsPageContent() {
         <RewardList rewards={rewards} />
       </main>
     </div>
-  );
-}
-
-export default function RewardsPage() {
-  return (
-    <AuthGuard>
-      <RewardsPageContent />
-    </AuthGuard>
   );
 }

@@ -1,6 +1,5 @@
 'use client';
 
-import { AuthGuard } from '@/components/auth-guard';
 import { AppHeader } from '@/components/layout/header';
 import { ChallengeList } from '@/components/challenge-list';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -11,7 +10,7 @@ import { useState } from 'react';
 import type { Challenge } from '@/lib/data';
 import { CreateChallengeForm } from '@/components/create-challenge-form';
 
-function ChallengesPageContent() {
+export default function ChallengesPage() {
   const [challenges, setChallenges] = useState<Challenge[]>(initialChallenges);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
@@ -87,13 +86,5 @@ function ChallengesPageContent() {
         </Tabs>
       </main>
     </div>
-  );
-}
-
-export default function ChallengesPage() {
-  return (
-    <AuthGuard>
-      <ChallengesPageContent />
-    </AuthGuard>
   );
 }

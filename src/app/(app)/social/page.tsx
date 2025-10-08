@@ -1,5 +1,4 @@
 'use client';
-import { AuthGuard } from '@/components/auth-guard';
 import { AppHeader } from '@/components/layout/header';
 import { SocialFeed } from '@/components/social-feed';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -27,7 +26,7 @@ const friends = [
   },
 ];
 
-function SocialPageContent() {
+export default function SocialPage() {
   return (
     <div className="flex flex-col h-full">
       <AppHeader title="Social" />
@@ -71,13 +70,5 @@ function SocialPageContent() {
         </div>
       </main>
     </div>
-  );
-}
-
-export default function SocialPage() {
-  return (
-    <AuthGuard>
-      <SocialPageContent />
-    </AuthGuard>
   );
 }

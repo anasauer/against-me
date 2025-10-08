@@ -107,8 +107,6 @@ function HomePageContent() {
 
 export default function HomePage() {
   return (
-    <AuthGuard>
       <HomePageContent />
-    </AuthGuard>
   );
 }

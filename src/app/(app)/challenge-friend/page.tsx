@@ -1,10 +1,9 @@
 'use client';
 
-import { AuthGuard } from '@/components/auth-guard';
 import { AppHeader } from '@/components/layout/header';
 import { ChallengeFriendForm } from '@/components/challenge-friend-form';
 
-function ChallengeFriendPageContent() {
+export default function ChallengeFriendPage() {
   return (
     <div className="flex flex-col h-full">
       <AppHeader title="Retar a un Amigo" />
@@ -12,13 +11,5 @@ function ChallengeFriendPageContent() {
         <ChallengeFriendForm />
       </main>
     </div>
-  );
-}
-
-export default function ChallengeFriendPage() {
-  return (
-    <AuthGuard>
-      <ChallengeFriendPageContent />
-    </AuthGuard>
   );
 }
