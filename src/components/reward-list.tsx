@@ -10,24 +10,35 @@ import {
 import { Button } from '@/components/ui/button';
 import { Gift } from 'lucide-react';
 import type { Reward } from '@/lib/data';
-import { user } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
+import { useUser, useFirestore, useDoc } from '@/firebase';
+import { doc } from 'firebase/firestore';
+import type { UserProfile } from '@/lib/types';
+
 
 export function RewardList({ rewards }: { rewards: Reward[] }) {
   const { toast } = useToast();
+  const { user: firebaseUser } = useUser();
+  const firestore = useFirestore();
+
+  const userDocRef = firebaseUser ? doc(firestore, 'users', firebaseUser.uid) : null;
+  const { data: userProfile } = useDoc<UserProfile>(userDocRef);
 
   const handleRedeem = (reward: Reward) => {
-    if (user.points >= reward.cost) {
+    const userPoints = userProfile?.points ?? 0;
+    
+    if (userPoints >= reward.cost) {
       toast({
         title: '¡Recompensa Canjeada!',
         description: `Has canjeado "${reward.title}" con éxito.`,
       });
+      // Here you would typically also update the user's points in Firestore
     } else {
       toast({
         variant: 'destructive',
         title: '¡No hay suficientes puntos!',
         description: `Necesitas ${
-          reward.cost - user.points
+          reward.cost - userPoints
         } puntos más para canjear esto.`,
       });
     }
@@ -50,7 +61,11 @@ export function RewardList({ rewards }: { rewards: Reward[] }) {
           </CardHeader>
           <CardContent className="flex-grow" />
           <CardFooter>
-            <Button className="w-full" onClick={() => handleRedeem(reward)}>
+            <Button
+              className="w-full"
+              onClick={() => handleRedeem(reward)}
+              disabled={!userProfile}
+            >
               Canjear por {reward.cost.toLocaleString()} pts
             </Button>
           </CardFooter>

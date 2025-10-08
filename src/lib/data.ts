@@ -40,34 +40,6 @@ export type Activity = {
   timestamp: string;
 };
 
-// This type is now used for mock data.
-// In the future, this data will come from Firestore and Firebase Auth.
-export type MockUser = {
-  name: string;
-  avatar: string;
-  avatarHint: string;
-  points: number;
-  dailyStreak: number;
-  weeklyStreak: number;
-  shareActivity: boolean;
-};
-
-let user: MockUser = {
-  name: 'Alex',
-  avatar: getPlaceholderImage('user-avatar-main')?.imageUrl || '',
-  avatarHint: getPlaceholderImage('user-avatar-main')?.imageHint || '',
-  points: 1250,
-  dailyStreak: 5,
-  weeklyStreak: 2,
-  shareActivity: true,
-};
-
-// Exporting the user object and a function to update it to simulate a data source.
-export { user };
-export function setUser(newUser: MockUser) {
-  user = newUser;
-}
-
 export const challenges: Challenge[] = [
     {
     id: '1',
@@ -177,8 +149,8 @@ export const activities: Activity[] = [
     id: '3',
     user: {
       name: 'Tú',
-      avatar: user.avatar,
-      avatarHint: user.avatarHint,
+      avatar: getPlaceholderImage('user-avatar-main')?.imageUrl || '',
+      avatarHint: getPlaceholderImage('user-avatar-main')?.imageHint || '',
     },
     action: 'creó un nuevo reto "Preparar Comida para la Semana".',
     timestamp: 'Ayer',

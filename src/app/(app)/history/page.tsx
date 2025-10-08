@@ -2,11 +2,25 @@
 import { AppHeader } from '@/components/layout/header';
 import { HistoryStats } from '@/components/history-stats';
 import { ChallengeList } from '@/components/challenge-list';
-import { challenges } from '@/lib/data';
+import { useUser, useFirestore, useCollection } from '@/firebase';
+import { useMemo } from 'react';
+import { collection } from 'firebase/firestore';
+import type { Challenge } from '@/lib/types';
+
 
 export default function HistoryPage() {
-  const completedChallenges = challenges.filter((c) => c.isCompleted);
-  const totalChallenges = challenges.length;
+  const { user } = useUser();
+  const firestore = useFirestore();
+
+  const challengesQuery = useMemo(() => {
+    if (!user) return null;
+    return collection(firestore, `users/${user.uid}/challenges`);
+  }, [user, firestore]);
+
+  const { data: challenges, loading } = useCollection<Challenge>(challengesQuery);
+
+  const completedChallenges = useMemo(() => challenges?.filter((c) => c.isCompleted) || [], [challenges]);
+  const totalChallenges = challenges?.length || 0;
   const completionRate =
     totalChallenges > 0
       ? Math.round((completedChallenges.length / totalChallenges) * 100)
@@ -24,6 +38,7 @@ export default function HistoryPage() {
         <ChallengeList
           title="Retos Completados"
           challenges={completedChallenges}
+          loading={loading}
           showAddButton={false}
           showDeleteButton={false}
         />
