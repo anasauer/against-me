@@ -1,7 +1,6 @@
-
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -26,14 +25,24 @@ import {
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
-import type { User } from '@/lib/data';
 
 const formSchema = z.object({
   name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres.'),
-  avatar: z.string().url('Por favor, introduce una URL de imagen válida.').optional().or(z.literal('')),
+  avatar: z
+    .string()
+    .url('Por favor, introduce una URL de imagen válida.')
+    .optional()
+    .or(z.literal('')),
 });
 
-export function EditProfileForm({ user, onSave }: { user: User, onSave: (data: z.infer<typeof formSchema>) => void }) {
+// A simplified user type for the form props
+type UserFormProps = {
+  user: { name: string; avatar: string };
+  onSave: (data: z.infer<typeof formSchema>) => void;
+};
+
+
+export function EditProfileForm({ user, onSave }: UserFormProps) {
   const [open, setOpen] = useState(false);
   const [preview, setPreview] = useState(user.avatar);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -46,6 +55,13 @@ export function EditProfileForm({ user, onSave }: { user: User, onSave: (data: z
       avatar: user.avatar,
     },
   });
+  
+  useEffect(() => {
+    // Reset form when user data changes (e.g., on login)
+    form.reset({ name: user.name, avatar: user.avatar });
+    setPreview(user.avatar);
+  }, [user, form]);
+
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -63,13 +79,9 @@ export function EditProfileForm({ user, onSave }: { user: User, onSave: (data: z
   function onSubmit(values: z.infer<typeof formSchema>) {
     console.log('Saving profile with values:', values);
     onSave(values);
-    toast({
-      title: '¡Perfil Actualizado!',
-      description: 'Tu nombre y foto de perfil han sido guardados.',
-    });
     setOpen(false);
   }
-  
+
   // Reset form and preview when dialog is closed
   const onOpenChange = (isOpen: boolean) => {
     if (!isOpen) {
@@ -91,14 +103,10 @@ export function EditProfileForm({ user, onSave }: { user: User, onSave: (data: z
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <div className="flex flex-col items-center space-y-4">
-               <Avatar className="w-24 h-24">
-                {preview && (
-                    <AvatarImage
-                    src={preview}
-                    />
-                )}
-                <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
-                </Avatar>
+              <Avatar className="w-24 h-24">
+                {preview && <AvatarImage src={preview} />}
+                <AvatarFallback>{user.name?.charAt(0)}</AvatarFallback>
+              </Avatar>
               <Input
                 type="file"
                 accept="image/*"
@@ -106,7 +114,11 @@ export function EditProfileForm({ user, onSave }: { user: User, onSave: (data: z
                 ref={fileInputRef}
                 onChange={handleFileChange}
               />
-              <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => fileInputRef.current?.click()}
+              >
                 Cambiar Foto
               </Button>
             </div>

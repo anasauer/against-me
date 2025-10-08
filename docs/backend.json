@@ -1,0 +1,80 @@
+{
+  "entities": {
+    "user": {
+      "title": "User",
+      "description": "A user of the application.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The user's display name."
+        },
+        "avatar": {
+          "type": "string",
+          "description": "URL of the user's avatar image."
+        },
+        "points": {
+          "type": "number",
+          "description": "Total points accumulated by the user."
+        },
+        "dailyStreak": {
+          "type": "number",
+          "description": "Current daily challenge completion streak."
+        },
+        "weeklyStreak": {
+          "type": "number",
+          "description": "Current weekly challenge completion streak."
+        }
+      },
+      "required": ["name"]
+    },
+    "challenge": {
+      "title": "Challenge",
+      "description": "A challenge for a user to complete.",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "The title of the challenge."
+        },
+        "description": {
+          "type": "string",
+          "description": "A description of the challenge."
+        },
+        "points": {
+          "type": "number",
+          "description": "Points awarded for completing the challenge."
+        },
+        "type": {
+          "type": "string",
+          "enum": ["daily", "weekly", "special"]
+        },
+        "isCompleted": {
+          "type": "boolean"
+        },
+        "userId": {
+          "type": "string",
+          "description": "The ID of the user this challenge belongs to."
+        }
+      },
+      "required": ["title", "points", "type", "isCompleted", "userId"]
+    }
+  },
+  "auth": {
+    "providers": ["email", "google"]
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "#/entities/user"
+      },
+      "description": "Stores public profile information for each user."
+    },
+    "/users/{userId}/challenges/{challengeId}": {
+      "schema": {
+        "$ref": "#/entities/challenge"
+      },
+      "description": "Stores the challenges for a specific user."
+    }
+  }
+}

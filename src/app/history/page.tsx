@@ -1,9 +1,11 @@
+'use client';
+import { AuthGuard } from '@/components/auth-guard';
 import { AppHeader } from '@/components/layout/header';
 import { HistoryStats } from '@/components/history-stats';
 import { ChallengeList } from '@/components/challenge-list';
 import { challenges } from '@/lib/data';
 
-export default function HistoryPage() {
+function HistoryPageContent() {
   const completedChallenges = challenges.filter((c) => c.isCompleted);
   const totalChallenges = challenges.length;
   const completionRate =
@@ -28,5 +30,13 @@ export default function HistoryPage() {
         />
       </main>
     </div>
+  );
+}
+
+export default function HistoryPage() {
+  return (
+    <AuthGuard>
+      <HistoryPageContent />
+    </AuthGuard>
   );
 }

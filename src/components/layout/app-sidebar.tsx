@@ -20,7 +20,7 @@ import {
   User as UserIcon,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { getPlaceholderImage } from '@/lib/placeholder-images';
+import { useUser } from '@/firebase';
 import { Logo } from '@/components/logo';
 
 const menuItems = [
@@ -35,13 +35,13 @@ const menuItems = [
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const userAvatar = getPlaceholderImage('user-avatar-sidebar');
+  const { user } = useUser();
 
   return (
     <Sidebar>
       <SidebarHeader>
         <div className="flex items-center justify-center">
-          <Logo className="w-24 h-24" forceDark />
+          <Logo className="w-24 h-24" />
         </div>
       </SidebarHeader>
       <SidebarContent>
@@ -63,21 +63,24 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarContent>
       <SidebarFooter>
-        <Link href="/profile" className="flex items-center gap-3">
-          <Avatar>
-            {userAvatar && (
-              <AvatarImage
-                src={userAvatar.imageUrl}
-                data-ai-hint={userAvatar.imageHint}
-              />
-            )}
-            <AvatarFallback>U</AvatarFallback>
-          </Avatar>
-          <div className="flex flex-col">
-            <span className="font-semibold text-sidebar-foreground">Usuario</span>
-             <span className="text-xs text-sidebar-foreground/70">Ver Perfil</span>
-          </div>
-        </Link>
+        {user ? (
+          <Link href="/profile" className="flex items-center gap-3">
+            <Avatar>
+              {user.photoURL && <AvatarImage src={user.photoURL} />}
+              <AvatarFallback>
+                {user.displayName?.charAt(0) || user.email?.charAt(0) || 'U'}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex flex-col">
+              <span className="font-semibold text-sidebar-foreground">
+                {user.displayName || user.email}
+              </span>
+              <span className="text-xs text-sidebar-foreground/70">
+                Ver Perfil
+              </span>
+            </div>
+          </Link>
+        ) : null}
       </SidebarFooter>
     </Sidebar>
   );

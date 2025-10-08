@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -8,16 +7,41 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { user as initialUser, setUser } from '@/lib/data';
 import { HistoryStats } from '@/components/history-stats';
 import { challenges } from '@/lib/data';
 import { EditProfileForm } from '@/components/edit-profile-form';
 import { Button } from '@/components/ui/button';
+import { useAuth, useUser } from '@/firebase';
+import { signOut } from 'firebase/auth';
+import { useToast } from '@/hooks/use-toast';
+import type { User as FirebaseUser } from 'firebase/auth';
+
+// This is a temporary type to merge Firebase user with our mock data structure
+type AppUser = {
+  name: string;
+  avatar: string;
+  shareActivity: boolean;
+};
 
 export default function ProfilePage() {
-  const [user, setUserState] = useState(initialUser);
-  const [shareActivity, setShareActivity] = useState(user.shareActivity);
   const router = useRouter();
+  const auth = useAuth();
+  const { user: firebaseUser } = useUser();
+  const { toast } = useToast();
+
+  // We'll merge firebaseUser with mock data for now
+  // TODO: This should all come from a 'users' collection in Firestore
+  const [user, setUserState] = useState<AppUser | null>(
+    firebaseUser
+      ? {
+          name: firebaseUser.displayName || 'Usuario',
+          avatar: firebaseUser.photoURL || '',
+          shareActivity: true, // mock
+        }
+      : null
+  );
+
+  const [shareActivity, setShareActivity] = useState(user?.shareActivity);
 
   const completedChallenges = challenges.filter((c) => c.isCompleted);
   const totalChallenges = challenges.length;
@@ -25,17 +49,28 @@ export default function ProfilePage() {
     totalChallenges > 0
       ? Math.round((completedChallenges.length / totalChallenges) * 100)
       : 0;
-  
+
   const handleSave = (data: { name: string; avatar: string }) => {
-    const updatedUser = { ...user, name: data.name, avatar: data.avatar };
-    setUser(updatedUser); // Update mock data source
-    setUserState(updatedUser); // Update local state
+    // TODO: This should update the user profile in Firebase Auth and Firestore
+    if (user) {
+      const updatedUser = { ...user, name: data.name, avatar: data.avatar };
+      setUserState(updatedUser);
+      toast({
+        title: '¡Perfil Actualizado!',
+        description: 'Tu nombre y foto de perfil han sido guardados.',
+      });
+    }
   };
 
-  const handleLogout = () => {
-    // In a real app, you'd clear session, etc. Here we just redirect.
+  const handleLogout = async () => {
+    await signOut(auth);
+    toast({ title: 'Has cerrado sesión.' });
     router.push('/login');
   };
+
+  if (!user || !firebaseUser) {
+    return null; // Or a loading spinner
+  }
 
   return (
     <div className="flex flex-col h-full">
@@ -44,18 +79,17 @@ export default function ProfilePage() {
         <Card>
           <CardHeader className="flex flex-col items-center text-center">
             <Avatar className="w-24 h-24 mb-4">
-              {user.avatar && (
-                <AvatarImage
-                  src={user.avatar}
-                />
-              )}
+              {user.avatar && <AvatarImage src={user.avatar} />}
               <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
             </Avatar>
             <CardTitle className="text-3xl">{user.name}</CardTitle>
             <p className="text-muted-foreground">Te uniste en 2024</p>
           </CardHeader>
           <CardContent className="text-center">
-            <EditProfileForm user={user} onSave={handleSave} />
+            <EditProfileForm
+              user={{ name: user.name, avatar: user.avatar }}
+              onSave={handleSave}
+            />
           </CardContent>
         </Card>
 
@@ -85,15 +119,19 @@ export default function ProfilePage() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader>
             <CardTitle>Cuenta</CardTitle>
           </CardHeader>
           <CardContent>
-             <Button variant="destructive" className="w-full" onClick={handleLogout}>
-                Cerrar sesión
-             </Button>
+            <Button
+              variant="destructive"
+              className="w-full"
+              onClick={handleLogout}
+            >
+              Cerrar sesión
+            </Button>
           </CardContent>
         </Card>
       </main>

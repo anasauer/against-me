@@ -1,4 +1,3 @@
-
 import { getPlaceholderImage } from './placeholder-images';
 
 export type Challenge = {
@@ -40,7 +39,9 @@ export type Activity = {
   timestamp: string;
 };
 
-export type User = {
+// This type is now used for mock data.
+// In the future, this data will come from Firestore and Firebase Auth.
+export type MockUser = {
   name: string;
   avatar: string;
   avatarHint: string;
@@ -50,7 +51,7 @@ export type User = {
   shareActivity: boolean;
 };
 
-let user: User = {
+let user: MockUser = {
   name: 'Alex',
   avatar: getPlaceholderImage('user-avatar-main')?.imageUrl || '',
   avatarHint: getPlaceholderImage('user-avatar-main')?.imageHint || '',
@@ -62,7 +63,7 @@ let user: User = {
 
 // Exporting the user object and a function to update it to simulate a data source.
 export { user };
-export function setUser(newUser: User) {
+export function setUser(newUser: MockUser) {
   user = newUser;
 }
 

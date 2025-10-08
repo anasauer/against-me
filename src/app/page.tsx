@@ -1,6 +1,6 @@
-
 'use client';
 
+import { AuthGuard } from '@/components/auth-guard';
 import Link from 'next/link';
 import { useState } from 'react';
 import { AppHeader } from '@/components/layout/header';
@@ -18,11 +18,11 @@ import { Gift } from 'lucide-react';
 import { ReceivedChallengeCard } from '@/components/received-challenge-card';
 import { useToast } from '@/hooks/use-toast';
 
-export default function HomePage() {
+function HomePageContent() {
   const [challenges, setChallenges] = useState<Challenge[]>(initialChallenges);
-  const [receivedChallenges, setReceivedChallenges] = useState<ReceivedChallenge[]>(
-    initialReceivedChallenges
-  );
+  const [receivedChallenges, setReceivedChallenges] = useState<
+    ReceivedChallenge[]
+  >(initialReceivedChallenges);
   const { toast } = useToast();
 
   const handleAcceptChallenge = (challenge: ReceivedChallenge) => {
@@ -46,12 +46,12 @@ export default function HomePage() {
   };
 
   const handleDeclineChallenge = (challengeId: string) => {
-     setReceivedChallenges((prev) => prev.filter((c) => c.id !== challengeId));
-     toast({
+    setReceivedChallenges((prev) => prev.filter((c) => c.id !== challengeId));
+    toast({
       title: 'Reto Rechazado',
       variant: 'destructive',
     });
-  }
+  };
 
   const todaysChallenges = challenges
     .filter(
@@ -76,7 +76,11 @@ export default function HomePage() {
 
         <div className="grid md:grid-cols-3 gap-6">
           <div className="md:col-span-2">
-            <ChallengeList title="Retos de Hoy" challenges={todaysChallenges} setChallenges={setChallenges} />
+            <ChallengeList
+              title="Retos de Hoy"
+              challenges={todaysChallenges}
+              setChallenges={setChallenges}
+            />
           </div>
           <div className="space-y-6">
             <div className="bg-primary text-primary-foreground p-6 rounded-lg shadow-lg">
@@ -97,5 +101,14 @@ export default function HomePage() {
         </div>
       </main>
     </div>
+  );
+}
+
+
+export default function HomePage() {
+  return (
+    <AuthGuard>
+      <HomePageContent />
+    </AuthGuard>
   );
 }

@@ -1,6 +1,6 @@
-
 'use client';
 
+import { AuthGuard } from '@/components/auth-guard';
 import { AppHeader } from '@/components/layout/header';
 import { ChallengeList } from '@/components/challenge-list';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -11,7 +11,7 @@ import { useState } from 'react';
 import type { Challenge } from '@/lib/data';
 import { CreateChallengeForm } from '@/components/create-challenge-form';
 
-export default function ChallengesPage() {
+function ChallengesPageContent() {
   const [challenges, setChallenges] = useState<Challenge[]>(initialChallenges);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
@@ -19,23 +19,26 @@ export default function ChallengesPage() {
   const weekly = challenges.filter((c) => c.type === 'weekly');
   const special = challenges.filter((c) => c.type === 'special');
 
-  const handleChallengeCreated = (newChallenge: Omit<Challenge, 'id' | 'isCompleted'>) => {
+  const handleChallengeCreated = (
+    newChallenge: Omit<Challenge, 'id' | 'isCompleted'>
+  ) => {
     const challengeToAdd: Challenge = {
       ...newChallenge,
       id: `challenge-${Date.now()}`,
       isCompleted: false,
     };
-    setChallenges(prev => [challengeToAdd, ...prev]);
+    setChallenges((prev) => [challengeToAdd, ...prev]);
   };
-
 
   return (
     <div className="flex flex-col h-full">
       <AppHeader title="Retos" />
       <main className="flex-1 p-4 md:p-6 space-y-6">
         <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold font-headline">Gestiona Tus Misiones</h2>
-           <CreateChallengeForm onChallengeCreated={handleChallengeCreated}>
+          <h2 className="text-2xl font-bold font-headline">
+            Gestiona Tus Misiones
+          </h2>
+          <CreateChallengeForm onChallengeCreated={handleChallengeCreated}>
             <Button className="bg-accent text-accent-foreground hover:bg-accent/90">
               <PlusCircle className="mr-2 h-4 w-4" />
               Crear Reto
@@ -84,5 +87,13 @@ export default function ChallengesPage() {
         </Tabs>
       </main>
     </div>
+  );
+}
+
+export default function ChallengesPage() {
+  return (
+    <AuthGuard>
+      <ChallengesPageContent />
+    </AuthGuard>
   );
 }

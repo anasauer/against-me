@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -14,15 +13,80 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Logo } from '@/components/logo';
+import { useAuth, useUser } from '@/firebase';
+import {
+  GoogleAuthProvider,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+} from 'firebase/auth';
+import { useEffect, useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
+import { Loader2 } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
+  const auth = useAuth();
+  const { user, loading } = useUser();
+  const { toast } = useToast();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (!loading && user) {
+      router.push('/');
+    }
+  }, [user, loading, router]);
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate a successful login and redirect
-    router.push('/');
+    setIsSubmitting(true);
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      toast({ title: '¡Bienvenido de nuevo!' });
+      router.push('/');
+    } catch (error: any) {
+      console.error(error);
+      toast({
+        variant: 'destructive',
+        title: 'Error al iniciar sesión',
+        description:
+          error.code === 'auth/invalid-credential'
+            ? 'Las credenciales son incorrectas.'
+            : 'Ocurrió un error. Por favor, intenta de nuevo.',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  const handleGoogleLogin = async () => {
+    setIsSubmitting(true);
+    const provider = new GoogleAuthProvider();
+    try {
+      await signInWithPopup(auth, provider);
+      toast({ title: '¡Bienvenido!' });
+      router.push('/');
+    } catch (error) {
+      console.error(error);
+      toast({
+        variant: 'destructive',
+        title: 'Error con Google',
+        description:
+          'No se pudo iniciar sesión con Google. Por favor, intenta de nuevo.',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (loading || user) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background">
@@ -46,6 +110,9 @@ export default function LoginPage() {
                   type="email"
                   placeholder="m@ejemplo.com"
                   required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={isSubmitting}
                 />
               </div>
               <div className="grid gap-2">
@@ -58,17 +125,31 @@ export default function LoginPage() {
                     ¿Olvidaste tu contraseña?
                   </Link>
                 </div>
-                <Input id="password" type="password" required />
+                <Input
+                  id="password"
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  disabled={isSubmitting}
+                />
               </div>
-              <Button type="submit" className="w-full">
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
+                {isSubmitting && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
                 Iniciar Sesión
               </Button>
               <Button
                 variant="outline"
                 className="w-full"
-                onClick={() => router.push('/')}
+                onClick={handleGoogleLogin}
                 type="button"
+                disabled={isSubmitting}
               >
+                {isSubmitting && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
                 Iniciar Sesión con Google
               </Button>
             </div>

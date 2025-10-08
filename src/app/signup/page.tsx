@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -14,15 +13,68 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Logo } from '@/components/logo';
+import { useAuth, useUser } from '@/firebase';
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { useEffect, useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
+import { Loader2 } from 'lucide-react';
 
 export default function SignupPage() {
   const router = useRouter();
+  const auth = useAuth();
+  const { user, loading } = useUser();
+  const { toast } = useToast();
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSignup = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (!loading && user) {
+      router.push('/');
+    }
+  }, [user, loading, router]);
+
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate a successful signup and redirect
-    router.push('/');
+    setIsSubmitting(true);
+    try {
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      await updateProfile(userCredential.user, { displayName: name });
+      
+      // In a real app, you would also create a user document in Firestore here.
+      
+      toast({ title: '¡Cuenta creada con éxito!' });
+      router.push('/');
+    } catch (error: any) {
+      console.error(error);
+      let description = 'Ocurrió un error. Por favor, intenta de nuevo.';
+      if (error.code === 'auth/email-already-in-use') {
+        description = 'Este correo electrónico ya está en uso.';
+      } else if (error.code === 'auth/weak-password') {
+        description = 'La contraseña debe tener al menos 6 caracteres.';
+      }
+      toast({
+        variant: 'destructive',
+        title: 'Error al registrarse',
+        description,
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+  
+  if (loading || user) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background">
@@ -41,7 +93,14 @@ export default function SignupPage() {
             <div className="grid gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="first-name">Nombre</Label>
-                <Input id="first-name" placeholder="Max" required />
+                <Input
+                  id="first-name"
+                  placeholder="Max"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  disabled={isSubmitting}
+                />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="email">Correo Electrónico</Label>
@@ -50,13 +109,26 @@ export default function SignupPage() {
                   type="email"
                   placeholder="m@ejemplo.com"
                   required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={isSubmitting}
                 />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="password">Contraseña</Label>
-                <Input id="password" type="password" required />
+                <Input
+                  id="password"
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  disabled={isSubmitting}
+                />
               </div>
-              <Button type="submit" className="w-full">
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
+                {isSubmitting && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
                 Crear una cuenta
               </Button>
             </div>

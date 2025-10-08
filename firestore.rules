@@ -1,0 +1,17 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Users can read their own profile
+    match /users/{userId} {
+      allow read, update: if request.auth.uid == userId;
+      allow create: if request.auth.uid != null;
+    }
+
+    // Users can read, write, and delete their own challenges
+    match /users/{userId}/challenges/{challengeId} {
+      allow read, create, update, delete: if request.auth.uid == userId;
+    }
+  }
+}
