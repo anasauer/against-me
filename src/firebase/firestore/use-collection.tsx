@@ -13,11 +13,11 @@ import { FirestorePermissionError } from '@/firebase/errors';
 
 // Helper function to extract path from a Query or CollectionReference
 function getQueryPath<T>(q: Query<T> | CollectionReference<T>): string {
-  if ('path' in q) {
     // It's a CollectionReference
+  if ('path' in q) {
     return (q as CollectionReference<T>).path;
   }
-  // For queries, we can't get a simple path, but we can try to get the collection id from the internal _query object.
+  // For queries, we can try to get the collection id from the internal _query object.
   // This is a hack and might break, but it's better than 'unknown path'.
   // Firestore's JS SDK doesn't expose a public API for this.
   const internalQuery = q as any;
