@@ -3,30 +3,53 @@
 import { AppHeader } from '@/components/layout/header';
 import { ChallengeList } from '@/components/challenge-list';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { challenges as initialChallenges } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import type { Challenge } from '@/lib/data';
 import { CreateChallengeForm } from '@/components/create-challenge-form';
+import { useUser, useFirestore, useCollection } from '@/firebase';
+import { collection, addDoc } from 'firebase/firestore';
 
 export default function ChallengesPage() {
-  const [challenges, setChallenges] = useState<Challenge[]>(initialChallenges);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const { user } = useUser();
+  const firestore = useFirestore();
+
+  const challengesQuery = useMemo(() => {
+    if (!user) return null;
+    return collection(firestore, `users/${user.uid}/challenges`);
+  }, [user, firestore]);
+  
+  const { data: challengesData, loading } = useCollection<Challenge & { id: string }>(challengesQuery);
+
+  const [challenges, setChallenges] = useState<Challenge[]>([]);
+
+  useEffect(() => {
+    if (challengesData) {
+      setChallenges(challengesData);
+    }
+  }, [challengesData]);
 
   const daily = challenges.filter((c) => c.type === 'daily');
   const weekly = challenges.filter((c) => c.type === 'weekly');
   const special = challenges.filter((c) => c.type === 'special');
 
-  const handleChallengeCreated = (
-    newChallenge: Omit<Challenge, 'id' | 'isCompleted'>
+  const handleChallengeCreated = async (
+    newChallenge: Omit<Challenge, 'id' | 'isCompleted' | 'userId'>
   ) => {
-    const challengeToAdd: Challenge = {
+    if (!user || !challengesQuery) return;
+    
+    const challengeToAdd: Omit<Challenge, 'id'> = {
       ...newChallenge,
-      id: `challenge-${Date.now()}`,
       isCompleted: false,
+      userId: user.uid,
     };
-    setChallenges((prev) => [challengeToAdd, ...prev]);
+    
+    try {
+      await addDoc(challengesQuery, challengeToAdd);
+    } catch (error) {
+      console.error("Error creating challenge:", error);
+    }
   };
 
   return (
@@ -55,7 +78,7 @@ export default function ChallengesPage() {
             <ChallengeList
               title="Todos los Retos"
               challenges={challenges}
-              setChallenges={setChallenges}
+              loading={loading}
               showAddButton={false}
             />
           </TabsContent>
@@ -63,7 +86,7 @@ export default function ChallengesPage() {
             <ChallengeList
               title="Retos Diarios"
               challenges={daily}
-              setChallenges={setChallenges}
+              loading={loading}
               showAddButton={false}
             />
           </TabsContent>
@@ -71,7 +94,7 @@ export default function ChallengesPage() {
             <ChallengeList
               title="Retos Semanales"
               challenges={weekly}
-              setChallenges={setChallenges}
+              loading={loading}
               showAddButton={false}
             />
           </TabsContent>
@@ -79,7 +102,7 @@ export default function ChallengesPage() {
             <ChallengeList
               title="Retos Especiales"
               challenges={special}
-              setChallenges={setChallenges}
+              loading={loading}
               showAddButton={false}
             />
           </TabsContent>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useUser, useFirestore, useDoc } from '@/firebase';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 import { Logo } from './logo';
 import { doc } from 'firebase/firestore';
@@ -13,6 +13,7 @@ type AppUser = {
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const { user, loading: authLoading } = useUser();
   const router = useRouter();
+  const pathname = usePathname();
   const firestore = useFirestore();
 
   const userDocRef = user ? doc(firestore, 'users', user.uid) : null;
@@ -23,19 +24,33 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (loading) return;
 
+    // If no user, redirect to login, unless they are already on a public page.
     if (!user) {
-      router.push('/login');
+      if (pathname !== '/login' && pathname !== '/signup') {
+        router.push('/login');
+      }
       return;
     }
 
-    if (user && userData && !userData.hasCompletedOnboarding) {
-        router.push('/welcome');
+    // If user is logged in but hasn't completed onboarding, redirect to welcome.
+    if (userData && !userData.hasCompletedOnboarding) {
+        if (pathname !== '/welcome') {
+          router.push('/welcome');
+        }
         return;
     }
 
-  }, [user, userData, loading, router]);
+    // If user is logged in, has completed onboarding, but is on a public page, redirect to home.
+    if (userData && userData.hasCompletedOnboarding) {
+        if (pathname === '/login' || pathname === '/signup' || pathname === '/welcome') {
+            router.push('/');
+        }
+    }
 
-  if (loading || !user || (user && !userData?.hasCompletedOnboarding)) {
+  }, [user, userData, loading, router, pathname]);
+
+  // Show loading screen while checking auth status or if a redirect is imminent.
+  if (loading || !user || (user && userData && !userData.hasCompletedOnboarding && pathname !== '/welcome')) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-background">
         <Logo className="w-24 h-24 mb-4 animate-pulse" />

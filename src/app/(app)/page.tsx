@@ -1,14 +1,12 @@
 'use client';
 
-import { AuthGuard } from '@/components/auth-guard';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { AppHeader } from '@/components/layout/header';
 import { StreakCounter } from '@/components/streak-counter';
 import { ChallengeList } from '@/components/challenge-list';
 import { SocialFeed } from '@/components/social-feed';
 import {
-  challenges as initialChallenges,
   activities,
   receivedChallenges as initialReceivedChallenges,
 } from '@/lib/data';
@@ -17,32 +15,69 @@ import { Button } from '@/components/ui/button';
 import { Gift } from 'lucide-react';
 import { ReceivedChallengeCard } from '@/components/received-challenge-card';
 import { useToast } from '@/hooks/use-toast';
+import { useUser, useFirestore, useCollection } from '@/firebase';
+import { collection, query, where, addDoc } from 'firebase/firestore';
 
 function HomePageContent() {
-  const [challenges, setChallenges] = useState<Challenge[]>(initialChallenges);
-  const [receivedChallenges, setReceivedChallenges] = useState<
-    ReceivedChallenge[]
-  >(initialReceivedChallenges);
+  const { user } = useUser();
+  const firestore = useFirestore();
   const { toast } = useToast();
 
-  const handleAcceptChallenge = (challenge: ReceivedChallenge) => {
+  // Fetch challenges from Firestore
+  const challengesQuery = useMemo(() => {
+    if (!user) return null;
+    return collection(firestore, `users/${user.uid}/challenges`);
+  }, [user, firestore]);
+  const { data: challengesData, loading: challengesLoading } = useCollection<Challenge>(challengesQuery);
+
+  const [challenges, setChallenges] = useState<Challenge[]>([]);
+  const [receivedChallenges, setReceivedChallenges] = useState<ReceivedChallenge[]>(initialReceivedChallenges);
+
+  useEffect(() => {
+    if (challengesData) {
+      // Assuming challengesData from Firestore doesn't have an `id` field in the document data.
+      // The document ID should be used as the challenge ID.
+      // This part might need adjustment based on how useCollection is implemented to return doc IDs.
+      // For now, let's assume the data is correctly formatted.
+      setChallenges(challengesData);
+    }
+  }, [challengesData]);
+
+
+  const handleAcceptChallenge = async (challenge: ReceivedChallenge) => {
+    if (!user) return;
+    
     // Remove from received and add to main challenge list
     setReceivedChallenges((prev) => prev.filter((c) => c.id !== challenge.id));
 
-    const newChallenge: Challenge = {
-      id: `challenge-${Date.now()}`,
+    const newChallenge: Omit<Challenge, 'id'> = {
       title: challenge.title,
       description: `Reto de ${challenge.from.name}. Recompensa: ${challenge.reward}`,
       points: 150, // Assign some points, this could be dynamic later
       type: 'special',
       isCompleted: false,
+      userId: user.uid,
     };
-    setChallenges((prev) => [newChallenge, ...prev]);
 
-    toast({
-      title: '¡Reto Aceptado!',
-      description: `"${challenge.title}" ha sido añadido a tu lista.`,
-    });
+    try {
+      if (!challengesQuery) throw new Error("Not authenticated");
+      const docRef = await addDoc(challengesQuery, newChallenge);
+      // Optimistically update UI
+      setChallenges((prev) => [...prev, { ...newChallenge, id: docRef.id }]);
+      toast({
+        title: '¡Reto Aceptado!',
+        description: `"${challenge.title}" ha sido añadido a tu lista.`,
+      });
+    } catch (error) {
+      console.error("Error accepting challenge: ", error);
+      // Rollback UI update if needed
+      setReceivedChallenges(initialReceivedChallenges); // a simple rollback
+      toast({
+        title: 'Error',
+        description: 'No se pudo aceptar el reto.',
+        variant: 'destructive',
+      });
+    }
   };
 
   const handleDeclineChallenge = (challengeId: string) => {
@@ -79,7 +114,7 @@ function HomePageContent() {
             <ChallengeList
               title="Retos de Hoy"
               challenges={todaysChallenges}
-              setChallenges={setChallenges}
+              loading={challengesLoading}
             />
           </div>
           <div className="space-y-6">

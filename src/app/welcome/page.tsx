@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser, useFirestore, useDoc } from '@/firebase';
-import { doc, setDoc, writeBatch } from 'firebase/firestore';
+import { doc, writeBatch } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -29,10 +29,7 @@ export default function WelcomePage() {
     if (!authLoading && !firebaseUser) {
       router.push('/login');
     }
-    if (!userLoading && userData?.hasCompletedOnboarding) {
-      router.push('/');
-    }
-  }, [firebaseUser, authLoading, userData, userLoading, router]);
+  }, [firebaseUser, authLoading, router]);
 
   const handleToggleChallenge = (challengeId: string) => {
     setSelectedChallenges((prev) => {
@@ -47,7 +44,7 @@ export default function WelcomePage() {
   };
 
   const handleContinue = async () => {
-    if (!firebaseUser || !userDocRef) return;
+    if (!firebaseUser || !userDocRef || !firestore) return;
     setIsSubmitting(true);
 
     try {
@@ -58,7 +55,7 @@ export default function WelcomePage() {
         .filter((c) => selectedChallenges.has(c.id))
         .forEach((challenge) => {
           const newChallengeRef = doc(firestore, `users/${firebaseUser.uid}/challenges`, `challenge-${Date.now()}-${challenge.id}`);
-          const challengeData: Omit<Challenge, 'id'> & { userId: string } = {
+          const challengeData: Omit<Challenge, 'id' | 'recurrence'> & { userId: string } = {
             title: challenge.title,
             description: challenge.description,
             points: challenge.points,
@@ -70,7 +67,7 @@ export default function WelcomePage() {
         });
 
       // Mark onboarding as complete
-      batch.set(userDocRef, { hasCompletedOnboarding: true }, { merge: true });
+      batch.update(userDocRef, { hasCompletedOnboarding: true });
 
       await batch.commit();
 
@@ -91,6 +88,7 @@ export default function WelcomePage() {
     }
   };
 
+  // This loading state handles all redirection scenarios and data fetching.
   if (authLoading || userLoading || !firebaseUser || userData?.hasCompletedOnboarding) {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
@@ -106,7 +104,7 @@ export default function WelcomePage() {
           <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center">
             <Logo />
           </div>
-          <CardTitle className="text-3xl font-bold">¡Bienvenido a Against Me!</CardTitle>
+          <CardTitle className="text-3xl font-bold">¡Bienvenido a Questify!</CardTitle>
           <CardDescription className="text-lg text-muted-foreground">
             Para empezar, elige algunos retos que te gustaría intentar.
           </CardDescription>

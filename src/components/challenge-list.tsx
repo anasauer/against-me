@@ -10,56 +10,71 @@ import {
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Progress } from '@/components/ui/progress';
-import { PlusCircle, Trash2 } from 'lucide-react';
+import { PlusCircle, Trash2, Loader2 } from 'lucide-react';
 import type { Challenge } from '@/lib/data';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
-import { useState, useEffect } from 'react';
+import { useUser, useFirestore } from '@/firebase';
+import { doc, updateDoc, deleteDoc } from 'firebase/firestore';
 
 export function ChallengeList({
   title,
   challenges,
-  setChallenges,
+  loading,
   showAddButton = true,
   showDeleteButton = true,
 }: {
   title: string;
   challenges: Challenge[];
-  setChallenges?: (challenges: Challenge[] | ((prev: Challenge[]) => Challenge[])) => void;
+  loading: boolean;
   showAddButton?: boolean;
   showDeleteButton?: boolean;
 }) {
   const { toast } = useToast();
+  const { user } = useUser();
+  const firestore = useFirestore();
 
-  const handleToggle = (challengeId: string) => {
-    const wasCompleted = challenges.find(c => c.id === challengeId)?.isCompleted;
+  const handleToggle = async (challengeId: string, isCompleted: boolean) => {
+    if (!user) return;
+    const challengeRef = doc(firestore, `users/${user.uid}/challenges`, challengeId);
     const challenge = challenges.find(c => c.id === challengeId);
 
-    if (setChallenges) {
-        setChallenges((prev) =>
-        prev.map((c) =>
-          c.id === challengeId ? { ...c, isCompleted: !c.isCompleted } : c
-        )
-      );
-    }
-    
-    if (!wasCompleted && challenge) {
+    try {
+      await updateDoc(challengeRef, { isCompleted: !isCompleted });
+      if (!isCompleted && challenge) {
+        toast({
+          title: '¡Reto Completado!',
+          description: `Has ganado ${challenge.points} puntos.`,
+        });
+      }
+    } catch (error) {
+      console.error("Error updating challenge: ", error);
       toast({
-        title: '¡Reto Completado!',
-        description: `Has ganado ${challenge.points} puntos.`,
+        title: 'Error',
+        description: 'No se pudo actualizar el reto.',
+        variant: 'destructive',
       });
     }
   };
 
-  const handleDelete = (challengeId: string) => {
-    if (setChallenges) {
-        setChallenges((prev) => prev.filter((c) => c.id !== challengeId));
+  const handleDelete = async (challengeId: string) => {
+    if (!user) return;
+    const challengeRef = doc(firestore, `users/${user.uid}/challenges`, challengeId);
+    try {
+      await deleteDoc(challengeRef);
+      toast({
+        title: 'Reto Eliminado',
+        description: 'El reto ha sido eliminado de tu lista.',
+        variant: 'destructive',
+      });
+    } catch (error) {
+      console.error("Error deleting challenge: ", error);
+      toast({
+        title: 'Error',
+        description: 'No se pudo eliminar el reto.',
+        variant: 'destructive',
+      });
     }
-    toast({
-      title: 'Reto Eliminado',
-      description: 'El reto ha sido eliminado de tu lista.',
-      variant: 'destructive',
-    });
   };
 
   const completedCount = challenges.filter((c) => c.isCompleted).length;
@@ -73,7 +88,7 @@ export function ChallengeList({
           <div className="grid gap-1">
             <CardTitle>{title}</CardTitle>
             <CardDescription>
-              {completedCount} de {challenges.length} completados.
+              {loading ? 'Cargando...' : `${completedCount} de ${challenges.length} completados.`}
             </CardDescription>
           </div>
           {showAddButton && (
@@ -86,58 +101,66 @@ export function ChallengeList({
         <Progress value={progress} className="mt-2" />
       </CardHeader>
       <CardContent className="space-y-2">
-        {challenges.map((challenge) => (
-          <div
-            key={challenge.id}
-            className={cn(
-              'flex items-center gap-4 p-3 rounded-lg transition-colors',
-              challenge.isCompleted
-                ? 'bg-muted/50'
-                : 'bg-background hover:bg-muted/50'
-            )}
-          >
-            <Checkbox
-              id={`challenge-${challenge.id}`}
-              checked={challenge.isCompleted}
-              onCheckedChange={() => {
-                handleToggle(challenge.id);
-              }}
-              className="transition-transform active:scale-95"
-            />
-            <div className="flex-1">
-              <label
-                htmlFor={`challenge-${challenge.id}`}
-                className={cn(
-                  'font-medium cursor-pointer',
-                  challenge.isCompleted && 'line-through text-muted-foreground'
-                )}
-              >
-                {challenge.title}
-              </label>
-              <p
-                className={cn(
-                  'text-sm text-muted-foreground',
-                  challenge.isCompleted && 'line-through'
-                )}
-              >
-                {challenge.description}
-              </p>
+        {loading ? (
+            <div className="flex justify-center items-center h-24">
+                <Loader2 className="h-6 w-6 animate-spin" />
             </div>
-            <div className="font-semibold text-primary">
-              +{challenge.points} pts
+        ) : challenges.length === 0 ? (
+            <p className="text-muted-foreground text-center py-4">No hay retos aquí todavía. ¡Crea uno nuevo!</p>
+        ) : (
+          challenges.map((challenge) => (
+            <div
+              key={challenge.id}
+              className={cn(
+                'flex items-center gap-4 p-3 rounded-lg transition-colors',
+                challenge.isCompleted
+                  ? 'bg-muted/50'
+                  : 'bg-background hover:bg-muted/50'
+              )}
+            >
+              <Checkbox
+                id={`challenge-${challenge.id}`}
+                checked={challenge.isCompleted}
+                onCheckedChange={() => {
+                  handleToggle(challenge.id, challenge.isCompleted);
+                }}
+                className="transition-transform active:scale-95"
+              />
+              <div className="flex-1">
+                <label
+                  htmlFor={`challenge-${challenge.id}`}
+                  className={cn(
+                    'font-medium cursor-pointer',
+                    challenge.isCompleted && 'line-through text-muted-foreground'
+                  )}
+                >
+                  {challenge.title}
+                </label>
+                <p
+                  className={cn(
+                    'text-sm text-muted-foreground',
+                    challenge.isCompleted && 'line-through'
+                  )}
+                >
+                  {challenge.description}
+                </p>
+              </div>
+              <div className="font-semibold text-primary">
+                +{challenge.points} pts
+              </div>
+              {showDeleteButton && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => handleDelete(challenge.id)}
+                  aria-label="Eliminar reto"
+                >
+                  <Trash2 className="h-4 w-4 text-destructive" />
+                </Button>
+              )}
             </div>
-            {showDeleteButton && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => handleDelete(challenge.id)}
-                aria-label="Eliminar reto"
-              >
-                <Trash2 className="h-4 w-4 text-destructive" />
-              </Button>
-            )}
-          </div>
-        ))}
+          ))
+        )}
       </CardContent>
     </Card>
   );

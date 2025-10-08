@@ -69,14 +69,13 @@ export function setUser(newUser: MockUser) {
 }
 
 export const challenges: Challenge[] = [
-  {
+    {
     id: '1',
     title: 'Un Mini-Espacio Limpio',
     description: 'Organizar una repisa, un cajón o el escritorio de trabajo.',
     points: 30,
     type: 'special',
     isCompleted: false,
-    recurrence: 'none',
   },
   {
     id: '2',
@@ -85,7 +84,6 @@ export const challenges: Challenge[] = [
     points: 20,
     type: 'daily',
     isCompleted: false,
-    recurrence: 'daily',
   },
   {
     id: '3',
@@ -94,7 +92,6 @@ export const challenges: Challenge[] = [
     points: 15,
     type: 'daily',
     isCompleted: false,
-    recurrence: 'daily',
   },
   {
     id: '4',
@@ -103,7 +100,6 @@ export const challenges: Challenge[] = [
     points: 100,
     type: 'weekly',
     isCompleted: false,
-    recurrence: 'weekly',
   },
   {
     id: '5',
@@ -112,7 +108,6 @@ export const challenges: Challenge[] = [
     points: 30,
     type: 'daily',
     isCompleted: false,
-    recurrence: 'daily',
   },
 ];
 

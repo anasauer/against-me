@@ -7,7 +7,7 @@ import type {
   Query,
 } from 'firebase/firestore';
 import { onSnapshot } from 'firebase/firestore';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 
 export function useCollection<T>(
   query: Query<T> | CollectionReference<T> | null
@@ -16,17 +16,20 @@ export function useCollection<T>(
   const [loading, setLoading] = useState(true);
   const firestore = useFirestore();
 
+  const stableQuery = useMemo(() => query, [JSON.stringify(query)]);
+
   useEffect(() => {
-    if (!query) {
+    if (!stableQuery) {
       setData([]);
       setLoading(false);
       return;
     }
 
+    setLoading(true);
     const unsubscribe = onSnapshot(
-      query,
+      stableQuery,
       (snapshot) => {
-        const data = snapshot.docs.map((doc) => doc.data());
+        const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() as object } as T));
         setData(data);
         setLoading(false);
       },
@@ -37,7 +40,7 @@ export function useCollection<T>(
     );
 
     return () => unsubscribe();
-  }, [firestore, query]);
+  }, [firestore, stableQuery]);
 
   return { data, loading };
 }

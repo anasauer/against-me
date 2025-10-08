@@ -34,7 +34,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!loading && user) {
-      router.push('/');
+      // AuthGuard will handle redirection to /welcome or /
     }
   }, [user, loading, router]);
 
@@ -45,7 +45,8 @@ export default function LoginPage() {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       toast({ title: '¡Bienvenido de nuevo!' });
-      // The useEffect above will handle the redirection
+      // The AuthGuard will handle redirection.
+      router.push('/');
     } catch (error: any) {
       console.error(error);
       toast({
@@ -65,13 +66,20 @@ export default function LoginPage() {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
       toast({ title: '¡Bienvenido!' });
-      // The useEffect above will handle the redirection
-    } catch (error: any) {
+       // The AuthGuard will handle redirection.
+       router.push('/');
+    } catch (error: any)
+    {
       console.error(error);
+      let description = 'No se pudo iniciar sesión con Google. Por favor, inténtalo de nuevo.';
+      if (error.code === 'auth/account-exists-with-different-credential') {
+        description = 'Ya existe una cuenta con este correo electrónico. Intenta iniciar sesión con otro método.';
+      } else if (error.code === 'auth/popup-closed-by-user') {
+        description = 'La ventana de inicio de sesión fue cerrada. Por favor, inténtalo de nuevo.';
+      }
       toast({
         title: 'Error con Google',
-        description:
-          'No se pudo iniciar sesión con Google. Por favor, inténtalo de nuevo.',
+        description: description,
         variant: 'destructive',
       });
       setIsSubmitting(false);
