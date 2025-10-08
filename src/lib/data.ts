@@ -7,6 +7,7 @@ export type Challenge = {
   points: number;
   type: 'daily' | 'weekly' | 'special';
   isCompleted: boolean;
+  userId?: string;
   recurrence?: 'none' | 'daily' | 'weekly' | 'biweekly' | 'monthly';
 };
 
@@ -67,21 +68,20 @@ export function setUser(newUser: MockUser) {
   user = newUser;
 }
 
-
 export const challenges: Challenge[] = [
   {
     id: '1',
-    title: 'Carrera Matutina',
-    description: 'Corre 5km por la mañana',
-    points: 50,
-    type: 'daily',
-    isCompleted: true,
-    recurrence: 'daily',
+    title: 'Un Mini-Espacio Limpio',
+    description: 'Organizar una repisa, un cajón o el escritorio de trabajo.',
+    points: 30,
+    type: 'special',
+    isCompleted: false,
+    recurrence: 'none',
   },
   {
     id: '2',
-    title: 'Leer un Capítulo',
-    description: 'Leer un capítulo de un libro',
+    title: 'Hidratación',
+    description: 'Tomar 2 litros de agua durante el día.',
     points: 20,
     type: 'daily',
     isCompleted: false,
@@ -89,21 +89,21 @@ export const challenges: Challenge[] = [
   },
   {
     id: '3',
-    title: 'Preparar Comida para la Semana',
-    description: 'Prepara todas tus comidas para la próxima semana',
-    points: 200,
-    type: 'weekly',
+    title: 'Pausa Activa',
+    description: 'Hacer 3 minutos de estiramiento.',
+    points: 15,
+    type: 'daily',
     isCompleted: false,
-    recurrence: 'weekly',
+    recurrence: 'daily',
   },
   {
     id: '4',
-    title: 'Aprender una Nueva Habilidad',
-    description: 'Pasa 1 hora aprendiendo una nueva habilidad en línea',
+    title: 'Tareas Clave',
+    description: 'Definir y agregar 3 tareas clave para la próxima semana.',
     points: 100,
-    type: 'special',
+    type: 'weekly',
     isCompleted: false,
-    recurrence: 'none',
+    recurrence: 'weekly',
   },
   {
     id: '5',
@@ -111,7 +111,7 @@ export const challenges: Challenge[] = [
     description: 'Pasa una hora antes de dormir sin pantallas',
     points: 30,
     type: 'daily',
-    isCompleted: true,
+    isCompleted: false,
     recurrence: 'daily',
   },
 ];
