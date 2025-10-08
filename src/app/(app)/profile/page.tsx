@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -53,6 +54,8 @@ export default function ProfilePage() {
     totalChallenges > 0
       ? Math.round((completedChallengesCount / totalChallenges) * 100)
       : 0;
+  
+  const isLoading = authLoading || userLoading || challengesLoading;
 
   const handleSave = (data: { name: string; avatar: string }) => {
     if (!user || !firebaseUser || !userDocRef) return;
@@ -97,9 +100,7 @@ export default function ProfilePage() {
     }
   };
 
-  const isLoading = userLoading || challengesLoading || authLoading;
-
-  if (isLoading || !firebaseUser) {
+  if (isLoading) {
     return (
       <div className="flex flex-col h-full">
         <AppHeader title="Perfil" />
@@ -133,12 +134,13 @@ export default function ProfilePage() {
     );
   }
 
-  if (!user) {
-    // This case might happen briefly if the user doc hasn't been created yet
-    // or if there's an issue fetching it.
+  if (!user || !firebaseUser) {
+    // This can happen if the user doc doesn't exist yet or if auth is lost.
+    // AuthGuard should prevent this, but it's a good safeguard.
     return (
         <div className="flex h-full items-center justify-center">
             <Loader2 className="h-8 w-8 animate-spin" />
+            <p className="ml-2">Cargando datos de usuario...</p>
         </div>
     );
   }
