@@ -1,111 +1,85 @@
 /**
  * @file Firestore Security Rules
- * @description This ruleset enforces a strict user-ownership model for user profiles and challenges.
- * Friend requests can be created by any authenticated user, but reads and writes are heavily restricted.
- *
- * Data Structure:
- * - /users/{userId}: Stores public user profile data, accessible only to the owning user.
- * - /users/{userId}/challenges/{challengeId}: Stores challenges specific to a user, only accessible to that user.
- * - /friendRequests/{requestId}: Stores friend requests between users.
- *
- * Key Security Decisions:
- * - Users can only read and write their own profile data and their own challenges.
- * - Listing all users is disallowed.
- * - Friend requests can be created by any authenticated user.
+ * @core_philosophy This ruleset enforces a user-ownership model for user data and allows public read access to friend requests while limiting write access.
+ * @data_structure
+ *   - /users/{userId}: Stores public user profile information.
+ *   - /users/{userId}/challenges/{challengeId}: Stores challenges specific to each user.
+ *   - /friendRequests/{requestId}: Stores friend requests between users.
+ * @key_security_decisions
+ *   - Users can only read and write their own profile data and challenges.
+ *   - Friend requests are publicly readable but only writable by authenticated users with valid data.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Controls access to user profiles.
+     * @description Controls access to user profile information.
      * @path /users/{userId}
-     * @allow (get) Signed-in user accessing their own profile.
-     * @allow (create) Signed-in user creating their own profile (self-registration).
-     * @allow (update) Signed-in user updating their own profile.
-     * @allow (delete) Signed-in user deleting their own profile.
-     * @deny (get) Signed-in user accessing another user's profile.
-     * @deny (create) Signed-in user creating a profile with a mismatched user ID.
-     * @deny (update) Signed-in user updating another user's profile.
-     * @deny (delete) Signed-in user deleting another user's profile.
-     * @principle Enforces document ownership for all operations.
+     * @allow (read) Authenticated user can get their own profile.
+     * @allow (create) Authenticated user can create their own profile.
+     * @deny (update) Non-authenticated user cannot update any profile.
+     * @deny (delete) Non-authenticated user cannot delete any profile.
+     * @principle Enforces document ownership for writes.
      */
     match /users/{userId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      function isOwner(userId) {
-        return request.auth.uid == userId;
-      }
-
-      function isExistingOwner(userId) {
-          return isOwner(userId) && resource != null;
-      }
-
-      allow get: if isOwner(userId);
+      allow get: if isSignedIn() && isOwner(userId);
       allow list: if false;
-
-      allow create: if isSignedIn() && isOwner(userId) && request.resource.data.id == userId;
-      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
-      allow delete: if isExistingOwner(userId);
+      allow create: if isSignedIn() && isOwner(userId) && request.resource.data.name is string;
+      allow update: if isSignedIn() && isOwner(userId) && resource.data.name == request.resource.data.name;
+      allow delete: if false;
     }
 
     /**
      * @description Controls access to challenges for a specific user.
      * @path /users/{userId}/challenges/{challengeId}
-     * @allow (get) Signed-in user accessing their own challenge.
-     * @allow (create) Signed-in user creating a challenge for themselves.
-     * @allow (update) Signed-in user updating their own challenge.
-     * @allow (delete) Signed-in user deleting their own challenge.
-     * @deny (get) Signed-in user accessing another user's challenge.
-     * @deny (create) Signed-in user creating a challenge for another user.
-     * @deny (update) Signed-in user updating another user's challenge.
-     * @deny (delete) Signed-in user deleting another user's challenge.
-     * @principle Enforces document ownership and prevents unauthorized access.
+     * @allow (read) Authenticated user can get their own challenges.
+     * @allow (create) Authenticated user can create challenges under their profile.
+     * @deny (update) Non-authenticated user cannot update any challenge.
+     * @deny (delete) Non-authenticated user cannot delete any challenge.
+     * @principle Enforces document ownership for writes.
      */
     match /users/{userId}/challenges/{challengeId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      function isOwner(userId) {
-        return request.auth.uid == userId;
-      }
-
-        function isExistingOwner(userId) {
-            return isOwner(userId) && resource != null;
-        }
-
-      allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
-
+      allow get: if isSignedIn() && isOwner(userId);
+      allow list: if isSignedIn() && isOwner(userId);
       allow create: if isSignedIn() && isOwner(userId) && request.resource.data.userId == userId;
-      allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
-      allow delete: if isExistingOwner(userId);
+      allow update: if isSignedIn() && isOwner(userId) && resource != null && resource.data.userId == request.resource.data.userId;
+      allow delete: if isSignedIn() && isOwner(userId) && resource != null;
     }
 
     /**
      * @description Controls access to friend requests.
      * @path /friendRequests/{requestId}
-     * @allow (create) Signed-in user creating a friend request.
-     * @deny (get) Anyone getting a friend request.
-     * @deny (list) Anyone listing friend requests.
-     * @deny (update) Anyone updating a friend request.
-     * @deny (delete) Anyone deleting a friend request.
-     * @principle Limits access to friend requests for privacy.
+     * @allow (read) Any user can read friend requests.
+     * @allow (create) Authenticated users can create friend requests.
+     * @deny (update) Non-authenticated user cannot update any friend request.
+     * @deny (delete) Non-authenticated user cannot delete any friend request.
+     * @principle Allows public read access but restricts write access to authenticated users.
      */
     match /friendRequests/{requestId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      allow get: if false;
-      allow list: if false;
-
-      allow create: if isSignedIn() && request.resource.data.senderId == request.auth.uid;
+      allow get: if true;
+      allow list: if true;
+      allow create: if isSignedIn() && isValidFriendRequest(request.resource.data);
       allow update: if false;
       allow delete: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    function isValidFriendRequest(friendRequest) {
+        return friendRequest.senderId is string
+        && friendRequest.senderName is string
+        && friendRequest.senderAvatar is string
+        && friendRequest.receiverId is string
+        && friendRequest.status in ["pending", "accepted", "declined"]
+        && friendRequest.createdAt is string;
     }
   }
 }
