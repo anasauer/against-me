@@ -65,11 +65,11 @@ export default function SignupPage() {
         points: 0,
         dailyStreak: 0,
         weeklyStreak: 0,
-        hasCompletedOnboarding: false, // <-- Add this field
+        hasCompletedOnboarding: false,
       });
 
       toast({ title: '¡Cuenta creada con éxito!' });
-      // The AuthGuard will handle redirection to /welcome
+      router.push('/welcome');
     } catch (error: any) {
       console.error(error);
       let description = 'Por favor, inténtalo de nuevo.';
@@ -84,7 +84,6 @@ export default function SignupPage() {
         description,
         variant: 'destructive',
       });
-    } finally {
       setIsSubmitting(false);
     }
   };

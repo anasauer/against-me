@@ -45,7 +45,7 @@ export default function LoginPage() {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       toast({ title: '¡Bienvenido de nuevo!' });
-      router.push('/');
+      // The useEffect above will handle the redirection
     } catch (error: any) {
       console.error(error);
       toast({
@@ -54,7 +54,6 @@ export default function LoginPage() {
           'Las credenciales son incorrectas. Por favor, inténtalo de nuevo.',
         variant: 'destructive',
       });
-    } finally {
       setIsSubmitting(false);
     }
   };
@@ -66,7 +65,7 @@ export default function LoginPage() {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
       toast({ title: '¡Bienvenido!' });
-      router.push('/');
+      // The useEffect above will handle the redirection
     } catch (error: any) {
       console.error(error);
       toast({
@@ -75,7 +74,6 @@ export default function LoginPage() {
           'No se pudo iniciar sesión con Google. Por favor, inténtalo de nuevo.',
         variant: 'destructive',
       });
-    } finally {
       setIsSubmitting(false);
     }
   };
