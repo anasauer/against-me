@@ -13,8 +13,9 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Logo } from '@/components/logo';
-import { useAuth, useUser } from '@/firebase';
+import { useAuth, useUser, useFirestore } from '@/firebase';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
@@ -22,6 +23,7 @@ import { Loader2 } from 'lucide-react';
 export default function SignupPage() {
   const router = useRouter();
   const auth = useAuth();
+  const firestore = useFirestore();
   const { user, loading } = useUser();
   const { toast } = useToast();
   const [name, setName] = useState('');
@@ -37,7 +39,7 @@ export default function SignupPage() {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!auth) return;
+    if (!auth || !firestore) return;
     setIsSubmitting(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(
@@ -45,11 +47,23 @@ export default function SignupPage() {
         email,
         password
       );
-      if (userCredential.user) {
-        await updateProfile(userCredential.user, {
-          displayName: name,
-        });
-      }
+      const newUser = userCredential.user;
+
+      // 1. Update Firebase Auth Profile
+      await updateProfile(newUser, {
+        displayName: name,
+      });
+
+      // 2. Create user document in Firestore
+      const userDocRef = doc(firestore, 'users', newUser.uid);
+      await setDoc(userDocRef, {
+        name: name,
+        avatar: newUser.photoURL || '',
+        points: 0,
+        dailyStreak: 0,
+        weeklyStreak: 0,
+      });
+
       toast({ title: '¡Cuenta creada con éxito!' });
       router.push('/');
     } catch (error: any) {

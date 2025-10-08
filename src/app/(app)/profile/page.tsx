@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { AppHeader } from '@/components/layout/header';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -8,57 +8,66 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { HistoryStats } from '@/components/history-stats';
-import { challenges } from '@/lib/data';
+import { challenges as mockChallenges } from '@/lib/data';
 import { EditProfileForm } from '@/components/edit-profile-form';
 import { Button } from '@/components/ui/button';
-import { useAuth, useUser } from '@/firebase';
-import { signOut } from 'firebase/auth';
+import { useAuth, useUser, useFirestore, useDoc } from '@/firebase';
+import { signOut, updateProfile as updateAuthProfile } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import type { User as FirebaseUser } from 'firebase/auth';
 
-// This is a temporary type to merge Firebase user with our mock data structure
 type AppUser = {
   name: string;
   avatar: string;
-  shareActivity: boolean;
+  points: number;
+  dailyStreak: number;
+  weeklyStreak: number;
 };
 
 export default function ProfilePage() {
   const router = useRouter();
   const auth = useAuth();
+  const firestore = useFirestore();
   const { user: firebaseUser } = useUser();
   const { toast } = useToast();
 
-  // We'll merge firebaseUser with mock data for now
-  // TODO: This should all come from a 'users' collection in Firestore
-  const [user, setUserState] = useState<AppUser | null>(
-    firebaseUser
-      ? {
-          name: firebaseUser.displayName || 'Usuario',
-          avatar: firebaseUser.photoURL || '',
-          shareActivity: true, // mock
-        }
-      : null
-  );
+  const userDocRef = firebaseUser ? doc(firestore, 'users', firebaseUser.uid) : null;
+  const { data: user, loading: userLoading } = useDoc<AppUser>(userDocRef);
 
-  const [shareActivity, setShareActivity] = useState(user?.shareActivity);
+  const [shareActivity, setShareActivity] = useState(true);
 
-  const completedChallenges = challenges.filter((c) => c.isCompleted);
-  const totalChallenges = challenges.length;
+  const completedChallenges = mockChallenges.filter((c) => c.isCompleted);
+  const totalChallenges = mockChallenges.length;
   const completionRate =
     totalChallenges > 0
       ? Math.round((completedChallenges.length / totalChallenges) * 100)
       : 0;
 
-  const handleSave = (data: { name: string; avatar: string }) => {
-    // TODO: This should update the user profile in Firebase Auth and Firestore
-    if (user) {
-      const updatedUser = { ...user, name: data.name, avatar: data.avatar };
-      setUserState(updatedUser);
-      toast({
-        title: '¡Perfil Actualizado!',
-        description: 'Tu nombre y foto de perfil han sido guardados.',
-      });
+  const handleSave = async (data: { name: string; avatar: string }) => {
+    if (user && firebaseUser && userDocRef) {
+      try {
+        // Update Firestore document
+        await setDoc(userDocRef, { name: data.name, avatar: data.avatar }, { merge: true });
+
+        // Update Firebase Auth profile
+        await updateAuthProfile(firebaseUser, {
+          displayName: data.name,
+          photoURL: data.avatar,
+        });
+
+        toast({
+          title: '¡Perfil Actualizado!',
+          description: 'Tu nombre y foto de perfil han sido guardados.',
+        });
+      } catch (error) {
+        console.error("Error updating profile: ", error);
+        toast({
+          variant: 'destructive',
+          title: 'Error al actualizar',
+          description: 'No se pudo guardar tu perfil. Inténtalo de nuevo.',
+        });
+      }
     }
   };
 
@@ -78,7 +87,7 @@ export default function ProfilePage() {
     }
   };
 
-  if (!user || !firebaseUser) {
+  if (userLoading || !user || !firebaseUser) {
     return null; // Or a loading spinner
   }
 

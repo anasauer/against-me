@@ -2,13 +2,21 @@
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Coins } from 'lucide-react';
-import { useUser } from '@/firebase';
-import { user as mockUser } from '@/lib/data'; // Temp for points
+import { useUser, useFirestore, useDoc } from '@/firebase';
+import { doc } from 'firebase/firestore';
+
+type AppUser = {
+  points: number;
+};
 
 export function AppHeader({ title }: { title: string }) {
   const { user } = useUser();
-  // TODO: Replace mockUser.points with points from Firestore user document
-  const points = mockUser.points;
+  const firestore = useFirestore();
+  
+  const userDocRef = user ? doc(firestore, 'users', user.uid) : null;
+  const { data: appUser } = useDoc<AppUser>(userDocRef);
+
+  const points = appUser?.points ?? 0;
 
   return (
     <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-sm sm:px-6">
