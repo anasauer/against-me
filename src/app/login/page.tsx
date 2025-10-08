@@ -41,43 +41,20 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-      toast({ title: '¡Bienvenido de nuevo!' });
-      router.push('/');
-    } catch (error: any) {
-      console.error(error);
-      toast({
-        variant: 'destructive',
-        title: 'Error al iniciar sesión',
-        description:
-          error.code === 'auth/invalid-credential'
-            ? 'Las credenciales son incorrectas.'
-            : 'Ocurrió un error. Por favor, intenta de nuevo.',
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+    // Simulate login
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    toast({ title: '¡Bienvenido de nuevo!' });
+    router.push('/');
+    setIsSubmitting(false);
   };
 
   const handleGoogleLogin = async () => {
     setIsSubmitting(true);
-    const provider = new GoogleAuthProvider();
-    try {
-      await signInWithPopup(auth, provider);
-      toast({ title: '¡Bienvenido!' });
-      router.push('/');
-    } catch (error) {
-      console.error(error);
-      toast({
-        variant: 'destructive',
-        title: 'Error con Google',
-        description:
-          'No se pudo iniciar sesión con Google. Por favor, intenta de nuevo.',
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+    // Simulate login
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    toast({ title: '¡Bienvenido!' });
+    router.push('/');
+    setIsSubmitting(false);
   };
 
   if (loading || user) {

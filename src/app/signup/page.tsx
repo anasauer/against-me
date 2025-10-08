@@ -38,34 +38,11 @@ export default function SignupPage() {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    try {
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
-      await updateProfile(userCredential.user, { displayName: name });
-      
-      // In a real app, you would also create a user document in Firestore here.
-      
-      toast({ title: '¡Cuenta creada con éxito!' });
-      router.push('/');
-    } catch (error: any) {
-      console.error(error);
-      let description = 'Ocurrió un error. Por favor, intenta de nuevo.';
-      if (error.code === 'auth/email-already-in-use') {
-        description = 'Este correo electrónico ya está en uso.';
-      } else if (error.code === 'auth/weak-password') {
-        description = 'La contraseña debe tener al menos 6 caracteres.';
-      }
-      toast({
-        variant: 'destructive',
-        title: 'Error al registrarse',
-        description,
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+    // Simulate signup
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    toast({ title: '¡Cuenta creada con éxito!' });
+    router.push('/');
+    setIsSubmitting(false);
   };
   
   if (loading || user) {

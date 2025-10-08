@@ -22,7 +22,6 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useUser } from '@/firebase';
 import { Logo } from '@/components/logo';
-import { useEffect, useState } from 'react';
 
 const menuItems = [
   { href: '/', label: 'Panel', icon: LayoutDashboard },
@@ -37,21 +36,12 @@ const menuItems = [
 export function AppSidebar() {
   const pathname = usePathname();
   const { user } = useUser();
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   return (
     <Sidebar>
       <SidebarHeader>
         <div className="flex items-center justify-center h-24 w-24 mx-auto">
-          {isClient ? (
-            <Logo className="w-24 h-24" />
-          ) : (
-            <div className="w-24 h-24" />
-          )}
+          <Logo className="w-24 h-24" />
         </div>
       </SidebarHeader>
       <SidebarContent>

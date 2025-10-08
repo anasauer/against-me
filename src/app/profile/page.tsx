@@ -63,7 +63,8 @@ export default function ProfilePage() {
   };
 
   const handleLogout = async () => {
-    await signOut(auth);
+    // Simulate logout
+    await new Promise(resolve => setTimeout(resolve, 500));
     toast({ title: 'Has cerrado sesión.' });
     router.push('/login');
   };
