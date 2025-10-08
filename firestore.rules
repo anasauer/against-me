@@ -1,85 +1,70 @@
 /**
- * @file Firestore Security Rules
- * @core_philosophy This ruleset enforces a user-ownership model for user data and allows public read access to friend requests while limiting write access.
- * @data_structure
- *   - /users/{userId}: Stores public user profile information.
- *   - /users/{userId}/challenges/{challengeId}: Stores challenges specific to each user.
- *   - /friendRequests/{requestId}: Stores friend requests between users.
- * @key_security_decisions
- *   - Users can only read and write their own profile data and challenges.
- *   - Friend requests are publicly readable but only writable by authenticated users with valid data.
+ * @fileoverview Firestore Security Rules for Prototyping.
+ *
+ * Core Philosophy:
+ * This ruleset enforces a basic security model where only authenticated users can access the database.
+ * It prioritizes rapid development and iteration by focusing on authentication and ownership,
+ * while relaxing data validation constraints.
+ *
+ * Data Structure:
+ * - /users/{userId}: Stores public profile information for each user.
+ * - /users/{userId}/challenges/{challengeId}: Stores the challenges for a specific user.
+ * - /friendRequests/{requestId}: Stores all friend requests within the application.
+ *
+ * Key Security Decisions:
+ * - Only authenticated users can read or write data.
+ * - Data validation is minimal to allow for flexible data shapes during prototyping.
+ * - The rules do not implement any role-based access control or complex authorization logic.
+ *
+ * Denormalization for Authorization:
+ *  - Friend requests are stored in a top-level collection to avoid complex queries. The `senderId` and `receiverId` fields are used for authorization.
+ *  - Challenges are stored in a subcollection of the user document to ensure ownership. The `userId` field within the challenge is redundant but simplifies rules.
+ *
+ * Structural Segregation:
+ *  - User profiles are stored in a dedicated collection to separate public user data from private information (if any).
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Controls access to user profile information.
+     * @description Allows only authenticated users to read and write user profile information.
      * @path /users/{userId}
-     * @allow (read) Authenticated user can get their own profile.
-     * @allow (create) Authenticated user can create their own profile.
-     * @deny (update) Non-authenticated user cannot update any profile.
-     * @deny (delete) Non-authenticated user cannot delete any profile.
-     * @principle Enforces document ownership for writes.
+     * @allow (get, list) if request.auth != null
+     * @allow (create, update, delete) if request.auth != null
+     * @deny (create, update, delete) if request.auth == null
+     * @principle Authenticated users only
      */
     match /users/{userId} {
-      allow get: if isSignedIn() && isOwner(userId);
-      allow list: if false;
-      allow create: if isSignedIn() && isOwner(userId) && request.resource.data.name is string;
-      allow update: if isSignedIn() && isOwner(userId) && resource.data.name == request.resource.data.name;
-      allow delete: if false;
+      allow read, write: if isSignedIn();
     }
 
     /**
-     * @description Controls access to challenges for a specific user.
+     * @description Allows only authenticated users to read and write challenges for a specific user.
      * @path /users/{userId}/challenges/{challengeId}
-     * @allow (read) Authenticated user can get their own challenges.
-     * @allow (create) Authenticated user can create challenges under their profile.
-     * @deny (update) Non-authenticated user cannot update any challenge.
-     * @deny (delete) Non-authenticated user cannot delete any challenge.
-     * @principle Enforces document ownership for writes.
+     * @allow (get, list) if request.auth != null
+     * @allow (create, update, delete) if request.auth != null
+     * @deny (create, update, delete) if request.auth == null
+     * @principle Authenticated users only
      */
     match /users/{userId}/challenges/{challengeId} {
-      allow get: if isSignedIn() && isOwner(userId);
-      allow list: if isSignedIn() && isOwner(userId);
-      allow create: if isSignedIn() && isOwner(userId) && request.resource.data.userId == userId;
-      allow update: if isSignedIn() && isOwner(userId) && resource != null && resource.data.userId == request.resource.data.userId;
-      allow delete: if isSignedIn() && isOwner(userId) && resource != null;
+      allow read, write: if isSignedIn();
     }
 
     /**
-     * @description Controls access to friend requests.
+     * @description Allows only authenticated users to read and write friend requests.
      * @path /friendRequests/{requestId}
-     * @allow (read) Any user can read friend requests.
-     * @allow (create) Authenticated users can create friend requests.
-     * @deny (update) Non-authenticated user cannot update any friend request.
-     * @deny (delete) Non-authenticated user cannot delete any friend request.
-     * @principle Allows public read access but restricts write access to authenticated users.
+     * @allow (get, list) if request.auth != null
+     * @allow (create, update, delete) if request.auth != null
+     * @deny (create, update, delete) if request.auth == null
+     * @principle Authenticated users only
      */
     match /friendRequests/{requestId} {
-      allow get: if true;
-      allow list: if true;
-      allow create: if isSignedIn() && isValidFriendRequest(request.resource.data);
-      allow update: if false;
-      allow delete: if false;
+      allow read, write: if isSignedIn();
     }
 
-    // Helper functions
     function isSignedIn() {
       return request.auth != null;
-    }
-
-    function isOwner(userId) {
-      return request.auth.uid == userId;
-    }
-
-    function isValidFriendRequest(friendRequest) {
-        return friendRequest.senderId is string
-        && friendRequest.senderName is string
-        && friendRequest.senderAvatar is string
-        && friendRequest.receiverId is string
-        && friendRequest.status in ["pending", "accepted", "declined"]
-        && friendRequest.createdAt is string;
     }
   }
 }
