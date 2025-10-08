@@ -17,6 +17,8 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Loader2, UserPlus, Search } from 'lucide-react';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 type FoundUser = {
   id: string;
@@ -77,32 +79,36 @@ export default function AddFriendPage() {
     }
   };
 
-  const handleSendRequest = async (receiverId: string) => {
+  const handleSendRequest = (receiverId: string) => {
     if (!currentUser || !currentUser.displayName) return;
-    try {
-      const requestsRef = collection(firestore, 'friendRequests');
-      // TODO: Check if a request already exists or if they are already friends
-      await addDoc(requestsRef, {
-        senderId: currentUser.uid,
-        senderName: currentUser.displayName,
-        senderAvatar: currentUser.photoURL || '',
-        receiverId: receiverId,
-        status: 'pending',
-        createdAt: serverTimestamp(),
+    
+    const requestsRef = collection(firestore, 'friendRequests');
+    const requestData = {
+      senderId: currentUser.uid,
+      senderName: currentUser.displayName,
+      senderAvatar: currentUser.photoURL || '',
+      receiverId: receiverId,
+      status: 'pending' as const,
+      createdAt: serverTimestamp(),
+    };
+
+    // TODO: Check if a request already exists or if they are already friends
+    addDoc(requestsRef, requestData)
+      .then(() => {
+        toast({
+          title: '¡Solicitud Enviada!',
+          description: 'Tu solicitud de amistad ha sido enviada.',
+        });
+        // Optionally, disable the button or show a "Request Sent" state
+      })
+      .catch((error) => {
+        const permissionError = new FirestorePermissionError({
+          path: requestsRef.path,
+          operation: 'create',
+          requestResourceData: requestData
+        });
+        errorEmitter.emit('permission-error', permissionError);
       });
-      toast({
-        title: '¡Solicitud Enviada!',
-        description: 'Tu solicitud de amistad ha sido enviada.',
-      });
-      // Optionally, disable the button or show a "Request Sent" state
-    } catch (error) {
-      console.error('Error sending friend request:', error);
-      toast({
-        title: 'Error',
-        description: 'No se pudo enviar la solicitud de amistad.',
-        variant: 'destructive',
-      });
-    }
   };
 
   return (

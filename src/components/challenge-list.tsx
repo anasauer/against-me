@@ -16,6 +16,8 @@ import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore } from '@/firebase';
 import { doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 export function ChallengeList({
   title,
@@ -34,47 +36,49 @@ export function ChallengeList({
   const { user } = useUser();
   const firestore = useFirestore();
 
-  const handleToggle = async (challengeId: string, isCompleted: boolean) => {
+  const handleToggle = (challengeId: string, isCompleted: boolean) => {
     if (!user) return;
     const challengeRef = doc(firestore, `users/${user.uid}/challenges`, challengeId);
     const challenge = challenges.find(c => c.id === challengeId);
+    const updatedData = { isCompleted: !isCompleted };
 
-    try {
-      await updateDoc(challengeRef, { isCompleted: !isCompleted });
-      if (!isCompleted && challenge) {
-        toast({
-          title: '¡Reto Completado!',
-          description: `Has ganado ${challenge.points} puntos.`,
+    updateDoc(challengeRef, updatedData)
+      .then(() => {
+        if (!isCompleted && challenge) {
+          toast({
+            title: '¡Reto Completado!',
+            description: `Has ganado ${challenge.points} puntos.`,
+          });
+        }
+      })
+      .catch((error) => {
+        const permissionError = new FirestorePermissionError({
+          path: challengeRef.path,
+          operation: 'update',
+          requestResourceData: updatedData,
         });
-      }
-    } catch (error) {
-      console.error("Error updating challenge: ", error);
-      toast({
-        title: 'Error',
-        description: 'No se pudo actualizar el reto.',
-        variant: 'destructive',
+        errorEmitter.emit('permission-error', permissionError);
       });
-    }
   };
 
-  const handleDelete = async (challengeId: string) => {
+  const handleDelete = (challengeId: string) => {
     if (!user) return;
     const challengeRef = doc(firestore, `users/${user.uid}/challenges`, challengeId);
-    try {
-      await deleteDoc(challengeRef);
-      toast({
-        title: 'Reto Eliminado',
-        description: 'El reto ha sido eliminado de tu lista.',
-        variant: 'destructive',
+    deleteDoc(challengeRef)
+      .then(() => {
+        toast({
+          title: 'Reto Eliminado',
+          description: 'El reto ha sido eliminado de tu lista.',
+          variant: 'destructive',
+        });
+      })
+      .catch((error) => {
+        const permissionError = new FirestorePermissionError({
+          path: challengeRef.path,
+          operation: 'delete',
+        });
+        errorEmitter.emit('permission-error', permissionError);
       });
-    } catch (error) {
-      console.error("Error deleting challenge: ", error);
-      toast({
-        title: 'Error',
-        description: 'No se pudo eliminar el reto.',
-        variant: 'destructive',
-      });
-    }
   };
 
   const completedCount = challenges.filter((c) => c.isCompleted).length;

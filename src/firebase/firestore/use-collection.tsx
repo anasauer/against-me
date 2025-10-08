@@ -3,11 +3,12 @@
 import { useFirestore } from '@/firebase/provider';
 import type {
   CollectionReference,
-  DocumentData,
   Query,
 } from 'firebase/firestore';
 import { onSnapshot } from 'firebase/firestore';
 import { useEffect, useState, useMemo } from 'react';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 export function useCollection<T>(
   query: Query<T> | CollectionReference<T> | null
@@ -34,7 +35,12 @@ export function useCollection<T>(
         setLoading(false);
       },
       (error) => {
-        console.error('Error fetching collection:', error);
+        const path = 'path' in stableQuery ? stableQuery.path : 'unknown path';
+        const permissionError = new FirestorePermissionError({
+          path: path,
+          operation: 'list'
+        });
+        errorEmitter.emit('permission-error', permissionError);
         setLoading(false);
       }
     );

@@ -12,6 +12,8 @@ import { Loader2 } from 'lucide-react';
 import { challenges as suggestedChallenges } from '@/lib/data';
 import type { Challenge } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 export default function WelcomePage() {
   const router = useRouter();
@@ -44,46 +46,52 @@ export default function WelcomePage() {
     if (!firebaseUser || !firestore) return;
     setIsSubmitting(true);
 
-    try {
-      const batch = writeBatch(firestore);
-      const userDocRef = doc(firestore, 'users', firebaseUser.uid);
+    const batch = writeBatch(firestore);
+    const userDocRef = doc(firestore, 'users', firebaseUser.uid);
 
-      // Add selected challenges
-      suggestedChallenges
-        .filter((c) => selectedChallenges.has(c.id))
-        .forEach((challenge) => {
-          const newChallengeRef = doc(collection(firestore, `users/${firebaseUser.uid}/challenges`));
-          const challengeData: Omit<Challenge, 'id' | 'recurrence'> & { userId: string } = {
-            title: challenge.title,
-            description: challenge.description,
-            points: challenge.points,
-            type: challenge.type,
-            isCompleted: false,
-            userId: firebaseUser.uid,
-          };
-          batch.set(newChallengeRef, challengeData);
+    const challengesToAdd: Array<Omit<Challenge, 'id'>> = [];
+    
+    // Add selected challenges
+    suggestedChallenges
+      .filter((c) => selectedChallenges.has(c.id))
+      .forEach((challenge) => {
+        const newChallengeRef = doc(collection(firestore, `users/${firebaseUser.uid}/challenges`));
+        const challengeData: Omit<Challenge, 'id' | 'recurrence'> & { userId: string } = {
+          title: challenge.title,
+          description: challenge.description,
+          points: challenge.points,
+          type: challenge.type,
+          isCompleted: false,
+          userId: firebaseUser.uid,
+        };
+        challengesToAdd.push(challengeData);
+        batch.set(newChallengeRef, challengeData);
+      });
+    
+    // Mark onboarding as complete
+    batch.update(userDocRef, { hasCompletedOnboarding: true });
+
+    batch.commit()
+      .then(() => {
+        toast({
+          title: '¡Todo listo!',
+          description: 'Hemos añadido tus primeros retos. ¡A por ellos!',
         });
-      
-      // Mark onboarding as complete
-      batch.update(userDocRef, { hasCompletedOnboarding: true });
-
-      await batch.commit();
-
-      toast({
-        title: '¡Todo listo!',
-        description: 'Hemos añadido tus primeros retos. ¡A por ellos!',
+        router.push('/');
+      })
+      .catch((error) => {
+        console.error('Error completing onboarding:', error);
+        const permissionError = new FirestorePermissionError({
+          path: userDocRef.path, // This is approximate, as batch can have multiple paths
+          operation: 'update',
+          requestResourceData: { 
+            hasCompletedOnboarding: true, 
+            challenges: challengesToAdd 
+          },
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        setIsSubmitting(false);
       });
-
-      router.push('/');
-    } catch (error) {
-      console.error('Error completing onboarding:', error);
-      toast({
-        title: 'Error',
-        description: 'No se pudo completar la configuración. Por favor, inténtalo de nuevo.',
-        variant: 'destructive',
-      });
-      setIsSubmitting(false);
-    }
   };
 
   if (authLoading || !firebaseUser) {

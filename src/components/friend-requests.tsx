@@ -16,6 +16,8 @@ import { Button } from '@/components/ui/button';
 import { Check, X, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { FriendRequest } from '@/lib/types';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 export function FriendRequests() {
   const { user: currentUser } = useUser();
@@ -33,60 +35,64 @@ export function FriendRequests() {
 
   const { data: requests, loading } = useCollection<FriendRequest & { id: string }>(requestsQuery);
 
-  const handleAccept = async (request: FriendRequest & { id: string }) => {
-    if (!currentUser) return;
-    try {
-      const batch = writeBatch(firestore);
+  const handleAccept = (request: FriendRequest & { id: string }) => {
+    if (!currentUser || !firestore) return;
 
-      // 1. Update request status
-      const requestRef = doc(firestore, 'friendRequests', request.id);
-      batch.update(requestRef, { status: 'accepted' });
+    const batch = writeBatch(firestore);
 
-      // 2. Add friend to both users
-      const currentUserRef = doc(firestore, 'users', currentUser.uid);
-      batch.update(currentUserRef, {
-        friends: arrayUnion(request.senderId),
+    // 1. Update request status
+    const requestRef = doc(firestore, 'friendRequests', request.id);
+    batch.update(requestRef, { status: 'accepted' });
+
+    // 2. Add friend to both users
+    const currentUserRef = doc(firestore, 'users', currentUser.uid);
+    batch.update(currentUserRef, {
+      friends: arrayUnion(request.senderId),
+    });
+
+    const senderUserRef = doc(firestore, 'users', request.senderId);
+    batch.update(senderUserRef, {
+      friends: arrayUnion(currentUser.uid),
+    });
+
+    batch.commit()
+      .then(() => {
+        toast({
+          title: '¡Amigo añadido!',
+          description: `Ahora eres amigo/a de ${request.senderName}.`,
+        });
+      })
+      .catch((error) => {
+        const permissionError = new FirestorePermissionError({
+          path: `batch write for ${requestRef.path}`,
+          operation: 'update',
+          requestResourceData: { status: 'accepted' },
+        });
+        errorEmitter.emit('permission-error', permissionError);
       });
-
-      const senderUserRef = doc(firestore, 'users', request.senderId);
-      batch.update(senderUserRef, {
-        friends: arrayUnion(currentUser.uid),
-      });
-
-      await batch.commit();
-
-      toast({
-        title: '¡Amigo añadido!',
-        description: `Ahora eres amigo/a de ${request.senderName}.`,
-      });
-    } catch (error) {
-      console.error('Error accepting friend request:', error);
-      toast({
-        title: 'Error',
-        description: 'No se pudo aceptar la solicitud.',
-        variant: 'destructive',
-      });
-    }
   };
 
-  const handleDecline = async (requestId: string) => {
-    try {
-      const requestRef = doc(firestore, 'friendRequests', requestId);
-      await writeBatch(firestore)
-        .update(requestRef, { status: 'declined' })
-        .commit();
-      toast({
-        title: 'Solicitud rechazada',
-        variant: 'destructive',
+  const handleDecline = (requestId: string) => {
+    if (!firestore) return;
+    const requestRef = doc(firestore, 'friendRequests', requestId);
+    const batch = writeBatch(firestore);
+    batch.update(requestRef, { status: 'declined' });
+    
+    batch.commit()
+      .then(() => {
+        toast({
+          title: 'Solicitud rechazada',
+          variant: 'destructive',
+        });
+      })
+      .catch((error) => {
+         const permissionError = new FirestorePermissionError({
+          path: requestRef.path,
+          operation: 'update',
+          requestResourceData: { status: 'declined' },
+        });
+        errorEmitter.emit('permission-error', permissionError);
       });
-    } catch (error) {
-      console.error('Error declining friend request:', error);
-      toast({
-        title: 'Error',
-        description: 'No se pudo rechazar la solicitud.',
-        variant: 'destructive',
-      });
-    }
   };
 
   if (loading) {

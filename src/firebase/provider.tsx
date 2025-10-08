@@ -4,6 +4,7 @@ import type { FirebaseApp } from 'firebase/app';
 import type { Auth } from 'firebase/auth';
 import type { Firestore } from 'firebase/firestore';
 import { createContext, memo, useContext, type ReactNode } from 'react';
+import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 
 const FirebaseContext = createContext<{
   firebaseApp: FirebaseApp | null;
@@ -66,6 +67,7 @@ const FirebaseProvider = memo(function FirebaseProvider({
         firestore,
       }}
     >
+      <FirebaseErrorListener />
       {children}
     </FirebaseContext.Provider>
   );

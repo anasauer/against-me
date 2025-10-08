@@ -17,6 +17,8 @@ import { ReceivedChallengeCard } from '@/components/received-challenge-card';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useCollection } from '@/firebase';
 import { collection, query, where, addDoc } from 'firebase/firestore';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 function HomePageContent() {
   const { user } = useUser();
@@ -44,40 +46,39 @@ function HomePageContent() {
   }, [challengesData]);
 
 
-  const handleAcceptChallenge = async (challenge: ReceivedChallenge) => {
-    if (!user) return;
+  const handleAcceptChallenge = (challenge: ReceivedChallenge) => {
+    if (!user || !challengesQuery) return;
     
     // Remove from received and add to main challenge list
     setReceivedChallenges((prev) => prev.filter((c) => c.id !== challenge.id));
 
-    const newChallenge: Omit<Challenge, 'id'> = {
+    const newChallenge = {
       title: challenge.title,
       description: `Reto de ${challenge.from.name}. Recompensa: ${challenge.reward}`,
       points: 150, // Assign some points, this could be dynamic later
-      type: 'special',
+      type: 'special' as const,
       isCompleted: false,
       userId: user.uid,
     };
 
-    try {
-      if (!challengesQuery) throw new Error("Not authenticated");
-      const docRef = await addDoc(challengesQuery, newChallenge);
-      // Optimistically update UI
-      setChallenges((prev) => [...prev, { ...newChallenge, id: docRef.id }]);
-      toast({
-        title: '¡Reto Aceptado!',
-        description: `"${challenge.title}" ha sido añadido a tu lista.`,
+    addDoc(challengesQuery, newChallenge)
+      .then((docRef) => {
+        setChallenges((prev) => [...prev, { ...newChallenge, id: docRef.id }]);
+        toast({
+          title: '¡Reto Aceptado!',
+          description: `"${challenge.title}" ha sido añadido a tu lista.`,
+        });
+      })
+      .catch((error) => {
+        // Rollback UI update if needed
+        setReceivedChallenges(initialReceivedChallenges); // a simple rollback
+        const permissionError = new FirestorePermissionError({
+          path: challengesQuery.path,
+          operation: 'create',
+          requestResourceData: newChallenge
+        });
+        errorEmitter.emit('permission-error', permissionError);
       });
-    } catch (error) {
-      console.error("Error accepting challenge: ", error);
-      // Rollback UI update if needed
-      setReceivedChallenges(initialReceivedChallenges); // a simple rollback
-      toast({
-        title: 'Error',
-        description: 'No se pudo aceptar el reto.',
-        variant: 'destructive',
-      });
-    }
   };
 
   const handleDeclineChallenge = (challengeId: string) => {

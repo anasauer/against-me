@@ -19,6 +19,9 @@ import { doc, setDoc } from 'firebase/firestore';
 import { useEffect, useState, useMemo } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
+
 
 export default function SignupPage() {
   const router = useRouter();
@@ -59,17 +62,31 @@ export default function SignupPage() {
 
       // 2. Create user document in Firestore
       const userDocRef = doc(firestore, 'users', newUser.uid);
-      await setDoc(userDocRef, {
+      const userData = {
         name: name,
         avatar: newUser.photoURL || '',
         points: 0,
         dailyStreak: 0,
         weeklyStreak: 0,
+        friends: [],
         hasCompletedOnboarding: false,
-      });
+      };
 
-      toast({ title: '¡Cuenta creada con éxito!' });
-      router.push('/welcome');
+      setDoc(userDocRef, userData)
+        .then(() => {
+            toast({ title: '¡Cuenta creada con éxito!' });
+            router.push('/welcome');
+        })
+        .catch(async (error) => {
+          const permissionError = new FirestorePermissionError({
+            path: userDocRef.path,
+            operation: 'create',
+            requestResourceData: userData,
+          });
+          errorEmitter.emit('permission-error', permissionError);
+          setIsSubmitting(false);
+        });
+
     } catch (error: any) {
       console.error(error);
       let description = 'Por favor, inténtalo de nuevo.';

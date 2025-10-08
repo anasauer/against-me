@@ -10,6 +10,8 @@ import type { Challenge } from '@/lib/data';
 import { CreateChallengeForm } from '@/components/create-challenge-form';
 import { useUser, useFirestore, useCollection } from '@/firebase';
 import { collection, addDoc } from 'firebase/firestore';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 export default function ChallengesPage() {
   const { user } = useUser();
@@ -34,22 +36,26 @@ export default function ChallengesPage() {
   const weekly = challenges.filter((c) => c.type === 'weekly');
   const special = challenges.filter((c) => c.type === 'special');
 
-  const handleChallengeCreated = async (
+  const handleChallengeCreated = (
     newChallenge: Omit<Challenge, 'id' | 'isCompleted' | 'userId'>
   ) => {
     if (!user || !challengesQuery) return;
     
-    const challengeToAdd: Omit<Challenge, 'id'> = {
+    const challengeToAdd = {
       ...newChallenge,
       isCompleted: false,
       userId: user.uid,
     };
     
-    try {
-      await addDoc(challengesQuery, challengeToAdd);
-    } catch (error) {
-      console.error("Error creating challenge:", error);
-    }
+    addDoc(challengesQuery, challengeToAdd)
+      .catch((error) => {
+        const permissionError = new FirestorePermissionError({
+          path: challengesQuery.path,
+          operation: 'create',
+          requestResourceData: challengeToAdd,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+      });
   };
 
   return (

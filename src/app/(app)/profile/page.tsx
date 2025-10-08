@@ -16,6 +16,8 @@ import { signOut, updateProfile as updateAuthProfile } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import type { User as FirebaseUser } from 'firebase/auth';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 type AppUser = {
   name: string;
@@ -44,31 +46,31 @@ export default function ProfilePage() {
       ? Math.round((completedChallenges.length / totalChallenges) * 100)
       : 0;
 
-  const handleSave = async (data: { name: string; avatar: string }) => {
-    if (user && firebaseUser && userDocRef) {
-      try {
-        // Update Firestore document
-        await setDoc(userDocRef, { name: data.name, avatar: data.avatar }, { merge: true });
+  const handleSave = (data: { name: string; avatar: string }) => {
+    if (!user || !firebaseUser || !userDocRef) return;
+    
+    // Update Firebase Auth profile
+    updateAuthProfile(firebaseUser, {
+      displayName: data.name,
+      photoURL: data.avatar,
+    }).catch(console.error);
 
-        // Update Firebase Auth profile
-        await updateAuthProfile(firebaseUser, {
-          displayName: data.name,
-          photoURL: data.avatar,
-        });
-
+    // Update Firestore document
+    setDoc(userDocRef, { name: data.name, avatar: data.avatar }, { merge: true })
+      .then(() => {
         toast({
           title: '¡Perfil Actualizado!',
           description: 'Tu nombre y foto de perfil han sido guardados.',
         });
-      } catch (error) {
-        console.error("Error updating profile: ", error);
-        toast({
-          variant: 'destructive',
-          title: 'Error al actualizar',
-          description: 'No se pudo guardar tu perfil. Inténtalo de nuevo.',
+      })
+      .catch((error) => {
+        const permissionError = new FirestorePermissionError({
+          path: userDocRef.path,
+          operation: 'update',
+          requestResourceData: data,
         });
-      }
-    }
+        errorEmitter.emit('permission-error', permissionError);
+      });
   };
 
   const handleLogout = async () => {
