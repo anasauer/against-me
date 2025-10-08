@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { AppHeader } from '@/components/layout/header';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -8,14 +8,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { HistoryStats } from '@/components/history-stats';
-import { challenges as mockChallenges } from '@/lib/data';
 import { EditProfileForm } from '@/components/edit-profile-form';
 import { Button } from '@/components/ui/button';
-import { useAuth, useUser, useFirestore, useDoc } from '@/firebase';
+import { useAuth, useUser, useFirestore, useDoc, useCollection } from '@/firebase';
 import { signOut, updateProfile as updateAuthProfile } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, collection } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import type { User as FirebaseUser } from 'firebase/auth';
+import type { Challenge } from '@/lib/data';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
@@ -37,13 +37,19 @@ export default function ProfilePage() {
   const userDocRef = firebaseUser ? doc(firestore, 'users', firebaseUser.uid) : null;
   const { data: user, loading: userLoading } = useDoc<AppUser>(userDocRef);
 
+  const challengesQuery = useMemo(() => {
+    if (!firebaseUser) return null;
+    return collection(firestore, `users/${firebaseUser.uid}/challenges`);
+  }, [firebaseUser, firestore]);
+  const { data: challenges, loading: challengesLoading } = useCollection<Challenge>(challengesQuery);
+
   const [shareActivity, setShareActivity] = useState(true);
 
-  const completedChallenges = mockChallenges.filter((c) => c.isCompleted);
-  const totalChallenges = mockChallenges.length;
+  const completedChallengesCount = useMemo(() => challenges?.filter((c) => c.isCompleted).length ?? 0, [challenges]);
+  const totalChallenges = challenges?.length ?? 0;
   const completionRate =
     totalChallenges > 0
-      ? Math.round((completedChallenges.length / totalChallenges) * 100)
+      ? Math.round((completedChallengesCount / totalChallenges) * 100)
       : 0;
 
   const handleSave = (data: { name: string; avatar: string }) => {
@@ -89,7 +95,7 @@ export default function ProfilePage() {
     }
   };
 
-  if (userLoading || !user || !firebaseUser) {
+  if (userLoading || challengesLoading || !user || !firebaseUser) {
     return null; // Or a loading spinner
   }
 
@@ -115,7 +121,7 @@ export default function ProfilePage() {
         </Card>
 
         <HistoryStats
-          completedCount={completedChallenges.length}
+          completedCount={completedChallengesCount}
           totalCount={totalChallenges}
           completionRate={completionRate}
         />
