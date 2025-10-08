@@ -4,11 +4,11 @@ import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <AuthGuard>
-      <SidebarProvider>
-        <AppSidebar />
+    <SidebarProvider>
+      <AppSidebar />
+      <AuthGuard>
         <SidebarInset>{children}</SidebarInset>
-      </SidebarProvider>
-    </AuthGuard>
+      </AuthGuard>
+    </SidebarProvider>
   );
 }
