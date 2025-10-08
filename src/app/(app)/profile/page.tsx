@@ -18,6 +18,8 @@ import type { User as FirebaseUser } from 'firebase/auth';
 import type { Challenge } from '@/lib/data';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Loader2 } from 'lucide-react';
 
 type AppUser = {
   name: string;
@@ -31,7 +33,7 @@ export default function ProfilePage() {
   const router = useRouter();
   const auth = useAuth();
   const firestore = useFirestore();
-  const { user: firebaseUser } = useUser();
+  const { user: firebaseUser, loading: authLoading } = useUser();
   const { toast } = useToast();
 
   const userDocRef = firebaseUser ? doc(firestore, 'users', firebaseUser.uid) : null;
@@ -95,9 +97,52 @@ export default function ProfilePage() {
     }
   };
 
-  if (userLoading || challengesLoading || !user || !firebaseUser) {
-    return null; // Or a loading spinner
+  const isLoading = userLoading || challengesLoading || authLoading;
+
+  if (isLoading || !firebaseUser) {
+    return (
+      <div className="flex flex-col h-full">
+        <AppHeader title="Perfil" />
+        <main className="flex-1 p-4 md:p-6 space-y-6">
+           <Card>
+            <CardHeader className="flex flex-col items-center text-center">
+              <Skeleton className="w-24 h-24 rounded-full mb-4" />
+              <Skeleton className="h-8 w-40 mb-2" />
+              <Skeleton className="h-4 w-32" />
+            </CardHeader>
+            <CardContent className="text-center">
+               <Skeleton className="h-10 w-32 mx-auto" />
+            </CardContent>
+          </Card>
+           <div className="grid gap-4 md:grid-cols-3">
+              <Card>
+                <CardHeader><Skeleton className="h-5 w-2/3" /></CardHeader>
+                <CardContent><Skeleton className="h-8 w-1/2" /></CardContent>
+              </Card>
+              <Card>
+                <CardHeader><Skeleton className="h-5 w-2/3" /></CardHeader>
+                <CardContent><Skeleton className="h-8 w-1/2" /></CardContent>
+              </Card>
+              <Card>
+                <CardHeader><Skeleton className="h-5 w-2/3" /></CardHeader>
+                <CardContent><Skeleton className="h-8 w-1/2" /></CardContent>
+              </Card>
+            </div>
+        </main>
+      </div>
+    );
   }
+
+  if (!user) {
+    // This case might happen briefly if the user doc hasn't been created yet
+    // or if there's an issue fetching it.
+    return (
+        <div className="flex h-full items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+    );
+  }
+
 
   return (
     <div className="flex flex-col h-full">

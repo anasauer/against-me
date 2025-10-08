@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Coins } from 'lucide-react';
 import { useUser, useFirestore, useDoc } from '@/firebase';
 import { doc } from 'firebase/firestore';
+import { Skeleton } from '../ui/skeleton';
 
 type AppUser = {
   points: number;
@@ -14,7 +15,7 @@ export function AppHeader({ title }: { title: string }) {
   const firestore = useFirestore();
   
   const userDocRef = user ? doc(firestore, 'users', user.uid) : null;
-  const { data: appUser } = useDoc<AppUser>(userDocRef);
+  const { data: appUser, loading: userLoading } = useDoc<AppUser>(userDocRef);
 
   const points = appUser?.points ?? 0;
 
@@ -28,7 +29,11 @@ export function AppHeader({ title }: { title: string }) {
         <div className="ml-auto flex items-center gap-4">
           <div className="flex items-center gap-2">
             <Coins className="h-6 w-6 text-primary" />
-            <span className="font-semibold">{points.toLocaleString()}</span>
+            {userLoading ? (
+              <Skeleton className="h-6 w-12" />
+            ) : (
+              <span className="font-semibold">{points.toLocaleString()}</span>
+            )}
           </div>
           <Avatar>
             {user.photoURL && <AvatarImage src={user.photoURL} />}
