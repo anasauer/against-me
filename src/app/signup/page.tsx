@@ -37,14 +37,40 @@ export default function SignupPage() {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!auth) return;
     setIsSubmitting(true);
-    // Simulate signup
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    toast({ title: '¡Cuenta creada con éxito!' });
-    router.push('/');
-    setIsSubmitting(false);
+    try {
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      if (userCredential.user) {
+        await updateProfile(userCredential.user, {
+          displayName: name,
+        });
+      }
+      toast({ title: '¡Cuenta creada con éxito!' });
+      router.push('/');
+    } catch (error: any) {
+      console.error(error);
+      let description = 'Por favor, inténtalo de nuevo.';
+      if (error.code === 'auth/email-already-in-use') {
+        description =
+          'Este correo electrónico ya está en uso. Intenta iniciar sesión.';
+      } else if (error.code === 'auth/weak-password') {
+        description = 'La contraseña debe tener al menos 6 caracteres.';
+      }
+      toast({
+        title: 'Error al registrarse',
+        description,
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
-  
+
   if (loading || user) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">

@@ -63,10 +63,19 @@ export default function ProfilePage() {
   };
 
   const handleLogout = async () => {
-    // Simulate logout
-    await new Promise(resolve => setTimeout(resolve, 500));
-    toast({ title: 'Has cerrado sesión.' });
-    router.push('/login');
+    if (!auth) return;
+    try {
+      await signOut(auth);
+      toast({ title: 'Has cerrado sesión.' });
+      router.push('/login');
+    } catch (error) {
+      console.error('Error signing out: ', error);
+      toast({
+        title: 'Error',
+        description: 'No se pudo cerrar la sesión. Inténtalo de nuevo.',
+        variant: 'destructive',
+      });
+    }
   };
 
   if (!user || !firebaseUser) {
