@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useUser } from '@/firebase';
-import { Logo } from '@/components/logo';
+import { SidebarLogo } from '../sidebar-logo';
 
 const menuItems = [
   { href: '/', label: 'Panel', icon: LayoutDashboard },
@@ -41,7 +41,7 @@ export function AppSidebar() {
     <Sidebar>
       <SidebarHeader>
         <div className="flex items-center justify-center h-24 w-24 mx-auto">
-          <Logo className="w-24 h-24" />
+          <SidebarLogo className="w-24 h-24" />
         </div>
       </SidebarHeader>
       <SidebarContent>
