@@ -1,17 +1,59 @@
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Users can read their own profile
+    /**
+     * @description Controls access to user profile information.
+     * @path /users/{userId}
+     * @allow (get, create, update, delete) if the user is signed in and the userId matches the authenticated user's ID.
+     * @deny (get, create, update, delete) if the user is not signed in or the userId does not match the authenticated user's ID.
+     * @principle Enforces document ownership for all operations on user profiles.
+     */
     match /users/{userId} {
-      allow read, update: if request.auth.uid == userId;
-      allow create: if request.auth.uid != null;
+      allow get: if isSignedIn() && isOwner(userId);
+      allow list: if false;
+      allow create: if isSignedIn() && isOwner(userId);
+      allow update: if isSignedIn() && isOwner(userId);
+      allow delete: if isSignedIn() && isOwner(userId);
     }
 
-    // Users can read, write, and delete their own challenges
+    /**
+     * @description Controls access to challenges for a specific user.
+     * @path /users/{userId}/challenges/{challengeId}
+     * @allow (get, create, update, delete) if the user is signed in, the userId matches the authenticated user's ID, and the challenge belongs to the user.
+     * @deny (get, create, update, delete) if the user is not signed in, the userId does not match the authenticated user's ID, or the challenge does not belong to the user.
+     * @principle Enforces document ownership for all operations on user challenges.
+     */
     match /users/{userId}/challenges/{challengeId} {
-      allow read, create, update, delete: if request.auth.uid == userId;
+      allow get: if isSignedIn() && isOwner(userId);
+      allow list: if false;
+      allow create: if isSignedIn() && isOwner(userId) && request.resource.data.userId == userId;
+      allow update: if isSignedIn() && isOwner(userId);
+      allow delete: if isSignedIn() && isOwner(userId);
+    }
+
+    /**
+     * @description Controls access to friend requests.
+     * @path /friendRequests/{requestId}
+     * @allow (get) if the user is either the sender or the receiver of the friend request.
+     * @deny (list) to prevent unauthorized listing of friend requests.
+     * @principle Allows access to friend requests only for involved parties and denies public listing.
+     */
+    match /friendRequests/{requestId} {
+      allow get: if isSignedIn() && (request.auth.uid == resource.data.senderId || request.auth.uid == resource.data.receiverId);
+      allow list: if false;
+      allow create: if isSignedIn() && (request.auth.uid == request.resource.data.senderId || request.auth.uid == request.resource.data.receiverId);
+      allow update: if isSignedIn() && (request.auth.uid == resource.data.senderId || request.auth.uid == resource.data.receiverId);
+      allow delete: if isSignedIn() && (request.auth.uid == resource.data.senderId || request.auth.uid == resource.data.receiverId);
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return request.auth.uid == userId;
     }
   }
 }
