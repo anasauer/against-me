@@ -2,6 +2,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { AppHeader } from '@/components/layout/header';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,12 +12,12 @@ import { user as initialUser, setUser } from '@/lib/data';
 import { HistoryStats } from '@/components/history-stats';
 import { challenges } from '@/lib/data';
 import { EditProfileForm } from '@/components/edit-profile-form';
-import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
 export default function ProfilePage() {
   const [user, setUserState] = useState(initialUser);
   const [shareActivity, setShareActivity] = useState(user.shareActivity);
+  const router = useRouter();
 
   const completedChallenges = challenges.filter((c) => c.isCompleted);
   const totalChallenges = challenges.length;
@@ -29,6 +30,11 @@ export default function ProfilePage() {
     const updatedUser = { ...user, name: data.name, avatar: data.avatar };
     setUser(updatedUser); // Update mock data source
     setUserState(updatedUser); // Update local state
+  };
+
+  const handleLogout = () => {
+    // In a real app, you'd clear session, etc. Here we just redirect.
+    router.push('/login');
   };
 
   return (
@@ -85,9 +91,9 @@ export default function ProfilePage() {
             <CardTitle>Cuenta</CardTitle>
           </CardHeader>
           <CardContent>
-            <Link href="/login" className="w-full">
-               <Button variant="destructive" className="w-full">Cerrar sesión</Button>
-            </Link>
+             <Button variant="destructive" className="w-full" onClick={handleLogout}>
+                Cerrar sesión
+             </Button>
           </CardContent>
         </Card>
       </main>
