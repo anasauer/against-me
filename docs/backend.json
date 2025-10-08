@@ -58,6 +58,32 @@
         }
       },
       "required": ["title", "points", "type", "isCompleted", "userId"]
+    },
+    "friendRequest": {
+      "title": "Friend Request",
+      "description": "Represents a friend request between two users.",
+      "type": "object",
+      "properties": {
+        "senderId": {
+          "type": "string",
+          "description": "The UID of the user sending the request."
+        },
+        "receiverId": {
+          "type": "string",
+          "description": "The UID of the user receiving the request."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "accepted", "declined"],
+          "description": "The current status of the friend request."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The timestamp when the request was created."
+        }
+      },
+      "required": ["senderId", "receiverId", "status", "createdAt"]
     }
   },
   "auth": {
@@ -75,6 +101,12 @@
         "$ref": "#/entities/challenge"
       },
       "description": "Stores the challenges for a specific user."
+    },
+    "/friendRequests/{requestId}": {
+      "schema": {
+        "$ref": "#/entities/friendRequest"
+      },
+      "description": "Stores all friend requests within the application."
     }
   }
 }

@@ -18,6 +18,7 @@ import {
   Swords,
   History,
   User as UserIcon,
+  UserPlus,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useUser } from '@/firebase';
@@ -28,6 +29,7 @@ const menuItems = [
   { href: '/challenges', label: 'Retos', icon: Target },
   { href: '/rewards', label: 'Recompensas', icon: Gift },
   { href: '/social', label: 'Social', icon: Users },
+  { href: '/add-friend', label: 'Añadir Amigos', icon: UserPlus },
   { href: '/history', label: 'Historial', icon: History },
   { href: '/challenge-friend', label: 'Retar', icon: Swords },
   { href: '/profile', label: 'Perfil', icon: UserIcon },
