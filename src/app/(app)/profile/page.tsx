@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { AppHeader } from '@/components/layout/header';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -15,7 +15,6 @@ import { useAuth, useUser, useFirestore, useDoc, useCollection } from '@/firebas
 import { signOut, updateProfile as updateAuthProfile } from 'firebase/auth';
 import { doc, setDoc, collection } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
-import type { User as FirebaseUser } from 'firebase/auth';
 import type { Challenge } from '@/lib/data';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
@@ -38,7 +37,7 @@ export default function ProfilePage() {
   const { toast } = useToast();
 
   const userDocRef = firebaseUser ? doc(firestore, 'users', firebaseUser.uid) : null;
-  const { data: user, loading: userLoading } = useDoc<AppUser>(userDocRef);
+  const { data: userProfile, loading: userLoading } = useDoc<AppUser>(userDocRef);
 
   const challengesQuery = useMemo(() => {
     if (!firebaseUser) return null;
@@ -55,10 +54,10 @@ export default function ProfilePage() {
       ? Math.round((completedChallengesCount / totalChallenges) * 100)
       : 0;
   
-  const isLoading = authLoading || userLoading || challengesLoading;
+  const isLoading = authLoading || (firebaseUser && (userLoading || challengesLoading));
 
   const handleSave = (data: { name: string; avatar: string }) => {
-    if (!user || !firebaseUser || !userDocRef) return;
+    if (!userProfile || !firebaseUser || !userDocRef) return;
     
     // Update Firebase Auth profile
     updateAuthProfile(firebaseUser, {
@@ -134,8 +133,8 @@ export default function ProfilePage() {
     );
   }
 
-  if (!user || !firebaseUser) {
-    // This can happen if the user doc doesn't exist yet or if auth is lost.
+  if (!userProfile || !firebaseUser) {
+    // This can happen if the user doc doesn't exist yet or auth is lost.
     // AuthGuard should prevent this, but it's a good safeguard.
     return (
         <div className="flex h-full items-center justify-center">
@@ -153,15 +152,15 @@ export default function ProfilePage() {
         <Card>
           <CardHeader className="flex flex-col items-center text-center">
             <Avatar className="w-24 h-24 mb-4">
-              {user.avatar && <AvatarImage src={user.avatar} />}
-              <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+              {userProfile.avatar && <AvatarImage src={userProfile.avatar} />}
+              <AvatarFallback>{userProfile.name.charAt(0)}</AvatarFallback>
             </Avatar>
-            <CardTitle className="text-3xl">{user.name}</CardTitle>
+            <CardTitle className="text-3xl">{userProfile.name}</CardTitle>
             <p className="text-muted-foreground">Te uniste en 2024</p>
           </CardHeader>
           <CardContent className="text-center">
             <EditProfileForm
-              user={{ name: user.name, avatar: user.avatar }}
+              user={{ name: userProfile.name, avatar: userProfile.avatar }}
               onSave={handleSave}
             />
           </CardContent>
