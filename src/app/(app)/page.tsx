@@ -5,9 +5,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { AppHeader } from '@/components/layout/header';
 import { StreakCounter } from '@/components/streak-counter';
 import { ChallengeList } from '@/components/challenge-list';
-import { SocialFeed } from '@/components/social-feed';
 import {
-  activities,
   receivedChallenges as initialReceivedChallenges,
 } from '@/lib/data';
 import type { Challenge, ReceivedChallenge } from '@/lib/data';
@@ -16,9 +14,10 @@ import { Gift } from 'lucide-react';
 import { ReceivedChallengeCard } from '@/components/received-challenge-card';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useCollection } from '@/firebase';
-import { collection, query, where, addDoc } from 'firebase/firestore';
+import { collection, addDoc } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 
 function HomePageContent() {
   const { user } = useUser();
@@ -119,20 +118,23 @@ function HomePageContent() {
             />
           </div>
           <div className="space-y-6">
-            <div className="bg-primary text-primary-foreground p-6 rounded-lg shadow-lg">
-              <h3 className="text-xl font-bold">¡Reclama Tus Recompensas!</h3>
-              <p className="mt-2 mb-4 text-primary-foreground/80">
-                Tienes puntos para gastar. Echa un vistazo a las recompensas que
-                has establecido para ti.
-              </p>
-              <Link href="/rewards">
-                <Button variant="secondary" className="w-full">
-                  <Gift className="mr-2 h-4 w-4" />
-                  Ir a Recompensas
-                </Button>
-              </Link>
-            </div>
-            <SocialFeed activities={activities.slice(0, 2)} />
+            <Card className="bg-primary text-primary-foreground">
+              <CardHeader>
+                <CardTitle className="text-xl">¡Reclama Tus Recompensas!</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="mt-2 mb-4 text-primary-foreground/80">
+                  Tienes puntos para gastar. Echa un vistazo a las recompensas que
+                  has establecido para ti.
+                </p>
+                <Link href="/rewards">
+                  <Button variant="secondary" className="w-full">
+                    <Gift className="mr-2 h-4 w-4" />
+                    Ir a Recompensas
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </main>

@@ -29,17 +29,6 @@ export type Reward = {
   cost: number;
 };
 
-export type Activity = {
-  id: string;
-  user: {
-    name: string;
-    avatar: string;
-    avatarHint: string;
-  };
-  action: string;
-  timestamp: string;
-};
-
 export const challenges: Challenge[] = [
     {
     id: '1',
@@ -121,48 +110,5 @@ export const rewards: Reward[] = [
     title: '2hs de Pase Libre',
     description: 'Tómate unas horas libres de tareas, chicos y responsabilidades.',
     cost: 1000,
-  },
-];
-
-export const activities: Activity[] = [
-  {
-    id: '1',
-    user: {
-      name: 'Jessica',
-      avatar: getPlaceholderImage('jessica-avatar')?.imageUrl ?? '',
-      avatarHint: getPlaceholderImage('jessica-avatar')?.imageHint ?? 'profile picture',
-    },
-    action: 'completó el reto "Carrera Matutina" y ganó 50 puntos.',
-    timestamp: 'Hace 2 horas',
-  },
-  {
-    id: '2',
-    user: {
-      name: 'Mark',
-      avatar: getPlaceholderImage('mark-avatar')?.imageUrl ?? '',
-      avatarHint: getPlaceholderImage('mark-avatar')?.imageHint ?? 'profile picture',
-    },
-    action: 'canjeó la recompensa "Noche de Película".',
-    timestamp: 'Hace 5 horas',
-  },
-  {
-    id: '3',
-    user: {
-      name: 'Tú',
-      avatar: getPlaceholderImage('user-avatar-main')?.imageUrl ?? '',
-      avatarHint: getPlaceholderImage('user-avatar-main')?.imageHint ?? 'profile picture',
-    },
-    action: 'creó un nuevo reto "Preparar Comida para la Semana".',
-    timestamp: 'Ayer',
-  },
-  {
-    id: '4',
-    user: {
-      name: 'Samantha',
-      avatar: getPlaceholderImage('samantha-avatar')?.imageUrl ?? '',
-      avatarHint: getPlaceholderImage('samantha-avatar')?.imageHint ?? 'profile picture',
-    },
-    action: '¡completó una racha de 7 días!',
-    timestamp: 'Ayer',
   },
 ];
