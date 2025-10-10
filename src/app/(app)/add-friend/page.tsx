@@ -47,10 +47,10 @@ export default function AddFriendPage() {
 
     try {
       const usersRef = collection(firestore, 'users');
-      // Search for a user with the exact email address
+      // Search for a user with the exact email address, normalizing to lower case
       const q = query(
         usersRef,
-        where('email', '==', searchQuery.trim())
+        where('email', '==', searchQuery.trim().toLowerCase())
       );
 
       const querySnapshot = await getDocs(q);
