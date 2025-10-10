@@ -46,52 +46,65 @@ export default function WelcomePage() {
     if (!firebaseUser || !firestore) return;
     setIsSubmitting(true);
 
-    const batch = writeBatch(firestore);
-    const userDocRef = doc(firestore, 'users', firebaseUser.uid);
+    try {
+      const batch = writeBatch(firestore);
+      const userDocRef = doc(firestore, 'users', firebaseUser.uid);
+      const challengesColRef = collection(firestore, `users/${firebaseUser.uid}/challenges`);
+      
+      const challengesToAdd: Array<Omit<Challenge, 'id'>> = [];
 
-    const challengesToAdd: Array<Omit<Challenge, 'id'>> = [];
-    
-    // Add selected challenges
-    suggestedChallenges
-      .filter((c) => selectedChallenges.has(c.id))
-      .forEach((challenge) => {
-        const newChallengeRef = doc(collection(firestore, `users/${firebaseUser.uid}/challenges`));
-        const challengeData: Omit<Challenge, 'id' | 'recurrence'> & { userId: string } = {
-          title: challenge.title,
-          description: challenge.description,
-          points: challenge.points,
-          type: challenge.type,
-          isCompleted: false,
-          userId: firebaseUser.uid,
-        };
-        challengesToAdd.push(challengeData);
-        batch.set(newChallengeRef, challengeData);
-      });
-    
-    // Mark onboarding as complete using set with merge to prevent "No document to update" error
-    batch.set(userDocRef, { hasCompletedOnboarding: true }, { merge: true });
+      // 1. Add the welcome challenge from AgainstMe
+      const welcomeChallengeRef = doc(challengesColRef);
+      const welcomeChallengeData = {
+        title: '¡Completa tu primer reto!',
+        description: 'Reto de bienvenida de AgainstMe. Recompensa: 10 puntos.',
+        points: 10,
+        type: 'special' as const,
+        isCompleted: false,
+        userId: firebaseUser.uid,
+      };
+      challengesToAdd.push(welcomeChallengeData);
+      batch.set(welcomeChallengeRef, welcomeChallengeData);
+      
+      // 2. Add user-selected challenges
+      suggestedChallenges
+        .filter((c) => selectedChallenges.has(c.id))
+        .forEach((challenge) => {
+          const newChallengeRef = doc(challengesColRef);
+          const challengeData = {
+            title: challenge.title,
+            description: challenge.description,
+            points: challenge.points,
+            type: challenge.type,
+            isCompleted: false,
+            userId: firebaseUser.uid,
+          };
+          challengesToAdd.push(challengeData);
+          batch.set(newChallengeRef, challengeData);
+        });
+      
+      // 3. Mark onboarding as complete
+      batch.set(userDocRef, { hasCompletedOnboarding: true }, { merge: true });
 
-    batch.commit()
-      .then(() => {
-        toast({
-          title: '¡Todo listo!',
-          description: 'Hemos añadido tus primeros retos. ¡A por ellos!',
-        });
-        router.push('/');
-      })
-      .catch((error) => {
-        console.error('Error completing onboarding:', error);
-        const permissionError = new FirestorePermissionError({
-          path: userDocRef.path, // This is approximate, as batch can have multiple paths
-          operation: 'update', // Logically it's an update, even if we use set with merge
-          requestResourceData: { 
-            hasCompletedOnboarding: true, 
-            challenges: challengesToAdd 
-          },
-        });
-        errorEmitter.emit('permission-error', permissionError);
-        setIsSubmitting(false);
+      // Commit all changes at once
+      await batch.commit();
+
+      toast({
+        title: '¡Todo listo!',
+        description: 'Hemos añadido tus primeros retos. ¡A por ellos!',
       });
+      router.push('/');
+
+    } catch (error) {
+      console.error('Error completing onboarding:', error);
+      const permissionError = new FirestorePermissionError({
+        path: `users/${firebaseUser.uid}`, // Approximate path for batch write
+        operation: 'update',
+        requestResourceData: { hasCompletedOnboarding: true, selectedChallenges: Array.from(selectedChallenges) },
+      });
+      errorEmitter.emit('permission-error', permissionError);
+      setIsSubmitting(false);
+    }
   };
 
   if (authLoading || !firebaseUser) {
