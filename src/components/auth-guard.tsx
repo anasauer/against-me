@@ -36,11 +36,12 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   const { data: userData, loading: userLoading } = useDoc<AppUser>(userDocRef);
   
   const [isVerified, setIsVerified] = useState(false);
+  
+  const isLoading = authLoading || (user != null && userLoading);
 
   useEffect(() => {
-    const isLoading = authLoading || (user && userLoading);
     if (isLoading) {
-      return; // Espera a que todo esté cargado
+      return;
     }
 
     const isPublic = publicRoutes.includes(pathname);
@@ -51,18 +52,15 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     if (user) {
       const hasCompletedOnboarding = userData?.hasCompletedOnboarding === true;
       if (hasCompletedOnboarding) {
-        // Usuario logueado y con onboarding completo
         if (isPublic || isOnboarding) {
           targetRoute = '/';
         }
       } else {
-        // Usuario logueado pero sin onboarding completo
         if (!isOnboarding) {
           targetRoute = onboardingRoute;
         }
       }
     } else {
-      // Usuario no logueado
       if (!isPublic) {
         targetRoute = '/login';
       }
@@ -74,7 +72,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       setIsVerified(true);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authLoading, user, userLoading, userData, pathname]);
+  }, [isLoading, user, userData, pathname]);
 
   if (!isVerified) {
     return <Loader />;
