@@ -4,7 +4,7 @@ import { useUser, useFirestore, useDoc } from '@/firebase';
 import { usePathname, useRouter } from 'next/navigation';
 import { Logo } from './logo';
 import { Loader2 } from 'lucide-react';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { doc } from 'firebase/firestore';
 import type { UserProfile } from '@/lib/types';
 
@@ -34,58 +34,49 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     [user, firestore]
   );
   const { data: userData, loading: userLoading } = useDoc<UserProfile>(userDocRef);
-  
+
   const isLoading = authLoading || userLoading;
+  const [isVerified, setIsVerified] = useState(false);
 
   useEffect(() => {
-    if (isLoading) return; // Wait for all data to load
+    if (isLoading) {
+      return; // Don't do anything until all data is loaded
+    }
 
     const isPublicRoute = publicRoutes.includes(pathname);
     const isWelcomeRoute = pathname === welcomeRoute;
     const hasCompletedOnboarding = userData?.hasCompletedOnboarding;
 
-    // Not logged in
+    let targetRoute: string | null = null;
+
     if (!user) {
-      if (!isPublicRoute && !isWelcomeRoute) {
-        router.push('/login');
+      // User is not logged in.
+      if (!isPublicRoute) {
+        targetRoute = '/login';
       }
-      return;
+    } else {
+      // User is logged in.
+      if (!hasCompletedOnboarding) {
+        if (!isWelcomeRoute) {
+          targetRoute = welcomeRoute;
+        }
+      } else {
+        // User has completed onboarding.
+        if (isPublicRoute || isWelcomeRoute) {
+          targetRoute = '/';
+        }
+      }
     }
 
-    // Logged in, but onboarding not complete
-    if (!hasCompletedOnboarding) {
-      if (!isWelcomeRoute) {
-        router.push(welcomeRoute);
-      }
-      return;
+    if (targetRoute && pathname !== targetRoute) {
+      router.push(targetRoute);
+    } else {
+      // If no redirection is needed, we can show the content.
+      setIsVerified(true);
     }
-
-    // Logged in and onboarding complete
-    if (hasCompletedOnboarding) {
-      if (isPublicRoute || isWelcomeRoute) {
-        router.push('/');
-      }
-      return;
-    }
-
   }, [user, userData, isLoading, pathname, router]);
 
-
-  // Determine if we should show the loader or the content
-  const showLoader = () => {
-    if (isLoading) return true;
-
-    const hasCompletedOnboarding = userData?.hasCompletedOnboarding;
-
-    // While redirecting, show loader
-    if (!user && !publicRoutes.includes(pathname) && pathname !== welcomeRoute) return true;
-    if (user && !hasCompletedOnboarding && pathname !== welcomeRoute) return true;
-    if (user && hasCompletedOnboarding && (publicRoutes.includes(pathname) || pathname === welcomeRoute)) return true;
-
-    return false;
-  }
-
-  if (showLoader()) {
+  if (!isVerified) {
     return <Loader />;
   }
 
