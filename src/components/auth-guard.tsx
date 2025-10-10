@@ -31,40 +31,52 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const firestore = useFirestore();
-  const [shouldRender, setShouldRender] = useState(false);
 
   const userDocRef = user ? doc(firestore, 'users', user.uid) : null;
   const { data: userData, loading: userLoading } = useDoc<AppUser>(userDocRef);
-
-  const isLoading = authLoading || (user && userLoading);
+  
+  const [isVerified, setIsVerified] = useState(false);
 
   useEffect(() => {
+    const isLoading = authLoading || (user && userLoading);
     if (isLoading) {
-      return; // Do nothing while loading
+      return; // Espera a que todo esté cargado
     }
 
     const isPublic = publicRoutes.includes(pathname);
     const isOnboarding = pathname === onboardingRoute;
 
+    let targetRoute: string | null = null;
+
     if (user) {
       const hasCompletedOnboarding = userData?.hasCompletedOnboarding === true;
-      if (!hasCompletedOnboarding && !isOnboarding) {
-        router.push(onboardingRoute);
-      } else if (hasCompletedOnboarding && (isPublic || isOnboarding)) {
-        router.push('/');
+      if (hasCompletedOnboarding) {
+        // Usuario logueado y con onboarding completo
+        if (isPublic || isOnboarding) {
+          targetRoute = '/';
+        }
       } else {
-        setShouldRender(true);
+        // Usuario logueado pero sin onboarding completo
+        if (!isOnboarding) {
+          targetRoute = onboardingRoute;
+        }
       }
     } else {
+      // Usuario no logueado
       if (!isPublic) {
-        router.push('/login');
-      } else {
-        setShouldRender(true);
+        targetRoute = '/login';
       }
     }
-  }, [isLoading, user, userData, pathname, router]);
 
-  if (!shouldRender) {
+    if (targetRoute && pathname !== targetRoute) {
+      router.push(targetRoute);
+    } else {
+      setIsVerified(true);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authLoading, user, userLoading, userData, pathname]);
+
+  if (!isVerified) {
     return <Loader />;
   }
 
