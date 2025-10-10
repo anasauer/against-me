@@ -53,10 +53,10 @@ export default function ProfilePage() {
       ? Math.round((completedChallengesCount / totalChallenges) * 100)
       : 0;
   
-  const isLoading = authLoading || userLoading;
+  const isLoading = authLoading || (firebaseUser && userLoading);
 
   const handleSave = (data: { name: string; avatar: string }) => {
-    if (!userProfile || !firebaseUser || !userDocRef) return;
+    if (!firebaseUser || !userDocRef) return;
     
     // Update Firebase Auth profile
     updateAuthProfile(firebaseUser, {
@@ -65,6 +65,7 @@ export default function ProfilePage() {
     }).catch(console.error);
 
     // Update Firestore document
+    // Use `setDoc` with merge to create the document if it doesn't exist
     setDoc(userDocRef, { name: data.name, avatar: data.avatar }, { merge: true })
       .then(() => {
         toast({
@@ -132,17 +133,20 @@ export default function ProfilePage() {
     );
   }
 
-  if (!userProfile || !firebaseUser) {
-    // This can happen if the user doc doesn't exist yet or auth is lost.
-    // AuthGuard should prevent this, but it's a good safeguard.
-    return (
+  // This is the key change: Even if the userProfile doesn't exist,
+  // we can still render the page with info from firebaseUser and allow logout.
+  if (!firebaseUser) {
+    // This case should be handled by AuthGuard, but it's good practice.
+     return (
         <div className="flex h-full items-center justify-center">
-            <Loader2 className="h-8 w-8 animate-spin" />
-            <p className="ml-2">Cargando datos de usuario...</p>
+            <p>Por favor, inicia sesión para ver tu perfil.</p>
         </div>
     );
   }
-
+  
+  // Use data from firebaseUser as a fallback if userProfile is missing.
+  const displayName = userProfile?.name || firebaseUser.displayName || 'Usuario';
+  const displayAvatar = userProfile?.avatar || firebaseUser.photoURL || '';
 
   return (
     <div className="flex flex-col h-full">
@@ -151,46 +155,52 @@ export default function ProfilePage() {
         <Card>
           <CardHeader className="flex flex-col items-center text-center">
             <Avatar className="w-24 h-24 mb-4">
-              {userProfile.avatar && <AvatarImage src={userProfile.avatar} />}
-              <AvatarFallback>{userProfile.name.charAt(0)}</AvatarFallback>
+              {displayAvatar && <AvatarImage src={displayAvatar} />}
+              <AvatarFallback>{displayName.charAt(0)}</AvatarFallback>
             </Avatar>
-            <CardTitle className="text-3xl">{userProfile.name}</CardTitle>
-            <p className="text-muted-foreground">Te uniste en 2024</p>
+            <CardTitle className="text-3xl">{displayName}</CardTitle>
+            <p className="text-muted-foreground">
+              {userProfile ? 'Te uniste en 2024' : 'Finaliza tu registro para ver más.'}
+            </p>
           </CardHeader>
           <CardContent className="text-center">
             <EditProfileForm
-              user={{ name: userProfile.name, avatar: userProfile.avatar }}
+              user={{ name: displayName, avatar: displayAvatar }}
               onSave={handleSave}
             />
           </CardContent>
         </Card>
 
-        <HistoryStats
-          completedCount={completedChallengesCount}
-          totalCount={totalChallenges}
-          completionRate={completionRate}
-        />
+        {userProfile && (
+            <>
+                <HistoryStats
+                completedCount={completedChallengesCount}
+                totalCount={totalChallenges}
+                completionRate={completionRate}
+                />
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Configuración</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="share-activity" className="flex flex-col gap-1">
-                <span>Compartir actividad</span>
-                <span className="font-normal text-sm text-muted-foreground">
-                  Permite que tus amigos vean tus logros y rachas.
-                </span>
-              </Label>
-              <Switch
-                id="share-activity"
-                checked={shareActivity}
-                onCheckedChange={setShareActivity}
-              />
-            </div>
-          </CardContent>
-        </Card>
+                <Card>
+                <CardHeader>
+                    <CardTitle>Configuración</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="flex items-center justify-between">
+                    <Label htmlFor="share-activity" className="flex flex-col gap-1">
+                        <span>Compartir actividad</span>
+                        <span className="font-normal text-sm text-muted-foreground">
+                        Permite que tus amigos vean tus logros y rachas.
+                        </span>
+                    </Label>
+                    <Switch
+                        id="share-activity"
+                        checked={shareActivity}
+                        onCheckedChange={setShareActivity}
+                    />
+                    </div>
+                </CardContent>
+                </Card>
+            </>
+        )}
 
         <Card>
           <CardHeader>
