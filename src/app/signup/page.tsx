@@ -38,6 +38,7 @@ export default function SignupPage() {
   const canSubmit = name && email && isPasswordValid && !isSubmitting;
 
   useEffect(() => {
+    // If user is already logged in, redirect to the main page.
     if (!loading && user) {
       router.push('/');
     }
@@ -72,11 +73,12 @@ export default function SignupPage() {
         hasCompletedOnboarding: false,
       };
 
-      // Use await to ensure the document is created before redirecting
       await setDoc(userDocRef, userData);
 
       toast({ title: '¡Cuenta creada con éxito!' });
-      router.push('/welcome');
+      // After signup, user state will change, and AuthGuard will redirect to /welcome
+      // No need to push router here, as the user is not yet considered fully "onboarded"
+      // The AuthGuard will see `hasCompletedOnboarding: false` and redirect correctly.
 
     } catch (error: any) {
       console.error(error);

@@ -33,8 +33,9 @@ export default function LoginPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
+    // If user is already logged in, redirect to the main page.
     if (!loading && user) {
-      // AuthGuard will handle redirection to /welcome or /
+      router.push('/');
     }
   }, [user, loading, router]);
 
@@ -45,8 +46,7 @@ export default function LoginPage() {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       toast({ title: '¡Bienvenido de nuevo!' });
-      // The AuthGuard will handle redirection.
-      router.push('/');
+      // The redirect will be handled by the useEffect hook.
     } catch (error: any) {
       console.error(error);
       toast({
@@ -66,8 +66,7 @@ export default function LoginPage() {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
       toast({ title: '¡Bienvenido!' });
-       // The AuthGuard will handle redirection.
-       router.push('/');
+       // The redirect will be handled by the useEffect hook.
     } catch (error: any)
     {
       console.error(error);
@@ -86,6 +85,7 @@ export default function LoginPage() {
     }
   };
 
+  // While loading or if user is logged in, show a loader
   if (loading || user) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
@@ -94,6 +94,7 @@ export default function LoginPage() {
     );
   }
 
+  // Only show the login form if not loading and no user is present
   return (
     <div className="flex items-center justify-center min-h-screen bg-background">
       <Card className="mx-auto max-w-sm">
