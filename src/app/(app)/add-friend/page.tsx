@@ -50,7 +50,7 @@ export default function AddFriendPage() {
       // Search for a user with the exact email address
       const q = query(
         usersRef,
-        where('email', '==', searchQuery.trim().toLowerCase())
+        where('email', '==', searchQuery.trim())
       );
 
       const querySnapshot = await getDocs(q);
