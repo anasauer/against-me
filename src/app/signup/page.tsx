@@ -72,35 +72,31 @@ export default function SignupPage() {
         hasCompletedOnboarding: false,
       };
 
-      setDoc(userDocRef, userData)
-        .then(() => {
-            toast({ title: '¡Cuenta creada con éxito!' });
-            router.push('/welcome');
-        })
-        .catch(async (error) => {
-          const permissionError = new FirestorePermissionError({
-            path: userDocRef.path,
-            operation: 'create',
-            requestResourceData: userData,
-          });
-          errorEmitter.emit('permission-error', permissionError);
-          setIsSubmitting(false);
-        });
+      // Use await to ensure the document is created before redirecting
+      await setDoc(userDocRef, userData);
+
+      toast({ title: '¡Cuenta creada con éxito!' });
+      router.push('/welcome');
 
     } catch (error: any) {
       console.error(error);
-      let description = 'Por favor, inténtalo de nuevo.';
-      if (error.code === 'auth/email-already-in-use') {
-        description =
-          'Este correo electrónico ya está en uso. Intenta iniciar sesión.';
-      } else if (error.code === 'auth/weak-password') {
-        description = 'La contraseña debe tener al menos 6 caracteres.';
+      // Check if the error is a Firestore permission error
+      if (error instanceof FirestorePermissionError) {
+         errorEmitter.emit('permission-error', error);
+      } else {
+        let description = 'Por favor, inténtalo de nuevo.';
+        if (error.code === 'auth/email-already-in-use') {
+          description =
+            'Este correo electrónico ya está en uso. Intenta iniciar sesión.';
+        } else if (error.code === 'auth/weak-password') {
+          description = 'La contraseña debe tener al menos 6 caracteres.';
+        }
+        toast({
+          title: 'Error al registrarse',
+          description,
+          variant: 'destructive',
+        });
       }
-      toast({
-        title: 'Error al registrarse',
-        description,
-        variant: 'destructive',
-      });
       setIsSubmitting(false);
     }
   };
