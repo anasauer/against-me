@@ -59,13 +59,17 @@ export default function LoginPage() {
        return;
     }
 
-    setAuthError('generic');
-    let description = 'Las credenciales son incorrectas. Por favor, inténtalo de nuevo.';
-      if (error.code === 'auth/account-exists-with-different-credential') {
+    let description = 'Ocurrió un error inesperado. Por favor, inténtalo de nuevo.';
+      if (error.code === 'auth/invalid-credential') {
+        description = 'El correo o la contraseña son incorrectos. Por favor, verifica tus credenciales.';
+        setAuthError(description); // Set state to show error in form
+        return; // Don't show toast for this specific error
+      } else if (error.code === 'auth/account-exists-with-different-credential') {
         description = 'Ya existe una cuenta con este correo electrónico. Intenta iniciar sesión con otro método.';
       } else if (error.code === 'auth/popup-closed-by-user') {
         description = 'La ventana de inicio de sesión fue cerrada. Por favor, inténtalo de nuevo.';
       }
+
       toast({
         title: 'Error al iniciar sesión',
         description: description,
@@ -144,6 +148,15 @@ export default function LoginPage() {
 
           <form onSubmit={handleLogin}>
             <div className="grid gap-4">
+               {authError && authError !== 'unauthorized-domain' && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>Error de inicio de sesión</AlertTitle>
+                  <AlertDescription>
+                    {authError}
+                  </AlertDescription>
+                </Alert>
+              )}
               <div className="grid gap-2">
                 <Label htmlFor="email">Correo Electrónico</Label>
                 <Input
