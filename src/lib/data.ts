@@ -79,8 +79,8 @@ export const receivedChallenges: ReceivedChallenge[] = [
     title: '¡Completa tu primer reto!',
     from: {
       name: 'AgainstMe',
-      avatar: getPlaceholderImage('questify-avatar')?.imageUrl ?? '',
-      avatarHint: getPlaceholderImage('questify-avatar')?.imageHint ?? 'app logo',
+      avatar: '', // Force fallback
+      avatarHint: 'app logo',
     },
     reward: '150 puntos de bonificación',
   },

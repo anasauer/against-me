@@ -34,7 +34,7 @@ export function ReceivedChallengeCard({
               De:
               <Avatar className="w-6 h-6">
                 <AvatarImage src={challenge.from.avatar} />
-                <AvatarFallback>
+                <AvatarFallback className="bg-primary text-primary-foreground">
                   {challenge.from.name.charAt(0)}
                 </AvatarFallback>
               </Avatar>
