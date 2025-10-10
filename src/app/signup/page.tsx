@@ -59,20 +59,22 @@ export default function SignupPage() {
       // 1. Update Firebase Auth Profile
       await updateProfile(newUser, {
         displayName: name,
+        photoURL: '', // Initially empty
       });
 
       // 2. Create user document in Firestore
       const userDocRef = doc(firestore, 'users', newUser.uid);
       const userData = {
         name: name,
-        avatar: newUser.photoURL || '',
+        avatar: '',
         points: 0,
         dailyStreak: 0,
         weeklyStreak: 0,
         friends: [],
-        hasCompletedOnboarding: false,
+        hasCompletedOnboarding: false, // Explicitly set to false
       };
-
+      
+      // Use setDoc to create the document for the new user.
       await setDoc(userDocRef, userData);
 
       toast({ title: '¡Cuenta creada con éxito!' });
@@ -81,9 +83,15 @@ export default function SignupPage() {
 
     } catch (error: any) {
       console.error(error);
+      const userDocRef = auth.currentUser ? doc(firestore, 'users', auth.currentUser.uid) : null;
       // Check if the error is a Firestore permission error
-      if (error instanceof FirestorePermissionError) {
-         errorEmitter.emit('permission-error', error);
+      if (userDocRef) {
+         const permissionError = new FirestorePermissionError({
+          path: userDocRef.path,
+          operation: 'create',
+          requestResourceData: { name, avatar: '' }
+         });
+         errorEmitter.emit('permission-error', permissionError);
       } else {
         let description = 'Por favor, inténtalo de nuevo.';
         if (error.code === 'auth/email-already-in-use') {

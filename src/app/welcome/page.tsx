@@ -68,8 +68,8 @@ export default function WelcomePage() {
         batch.set(newChallengeRef, challengeData);
       });
     
-    // Mark onboarding as complete
-    batch.update(userDocRef, { hasCompletedOnboarding: true });
+    // Mark onboarding as complete using set with merge to prevent "No document to update" error
+    batch.set(userDocRef, { hasCompletedOnboarding: true }, { merge: true });
 
     batch.commit()
       .then(() => {
@@ -83,7 +83,7 @@ export default function WelcomePage() {
         console.error('Error completing onboarding:', error);
         const permissionError = new FirestorePermissionError({
           path: userDocRef.path, // This is approximate, as batch can have multiple paths
-          operation: 'update',
+          operation: 'update', // Logically it's an update, even if we use set with merge
           requestResourceData: { 
             hasCompletedOnboarding: true, 
             challenges: challengesToAdd 
