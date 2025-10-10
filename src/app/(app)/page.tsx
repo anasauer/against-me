@@ -10,7 +10,7 @@ import {
 } from '@/lib/data';
 import type { Challenge, ReceivedChallenge } from '@/lib/data';
 import { Button } from '@/components/ui/button';
-import { Gift } from 'lucide-react';
+import { Gift, ShieldCheck } from 'lucide-react';
 import { ReceivedChallengeCard } from '@/components/received-challenge-card';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useCollection } from '@/firebase';
@@ -18,6 +18,9 @@ import { collection, addDoc } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+
 
 function HomePageContent() {
   const { user } = useUser();
@@ -33,6 +36,7 @@ function HomePageContent() {
 
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [receivedChallenges, setReceivedChallenges] = useState<ReceivedChallenge[]>(initialReceivedChallenges);
+  const [shareActivity, setShareActivity] = useState(false);
 
   useEffect(() => {
     if (challengesData) {
@@ -54,7 +58,7 @@ function HomePageContent() {
     const newChallenge = {
       title: challenge.title,
       description: `Reto de ${challenge.from.name}. Recompensa: ${challenge.reward}`,
-      points: 10, // Assign some points, this could be dynamic later
+      points: 10,
       type: 'special' as const,
       isCompleted: false,
       userId: user.uid,
@@ -134,6 +138,26 @@ function HomePageContent() {
                   </Button>
                 </Link>
               </CardContent>
+            </Card>
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2"><ShieldCheck className="w-5 h-5" /> Privacidad</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="flex items-center justify-between">
+                    <Label htmlFor="share-activity" className="flex flex-col gap-1">
+                        <span>Compartir actividad</span>
+                        <span className="font-normal text-sm text-muted-foreground">
+                        Permite que tus amigos vean tus logros.
+                        </span>
+                    </Label>
+                    <Switch
+                        id="share-activity"
+                        checked={shareActivity}
+                        onCheckedChange={setShareActivity}
+                    />
+                    </div>
+                </CardContent>
             </Card>
           </div>
         </div>

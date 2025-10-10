@@ -5,8 +5,6 @@ import { useRouter } from 'next/navigation';
 import { AppHeader } from '@/components/layout/header';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
 import { EditProfileForm } from '@/components/edit-profile-form';
 import { Button } from '@/components/ui/button';
 import { useAuth, useUser, useFirestore, useDoc } from '@/firebase';
@@ -31,8 +29,6 @@ function SettingsPageContent() {
 
   const userDocRef = firebaseUser ? doc(firestore, 'users', firebaseUser.uid) : null;
   const { data: userProfile, loading: userLoading } = useDoc<AppUser>(userDocRef);
-
-  const [shareActivity, setShareActivity] = useState(false);
 
   const handleSave = (data: { name: string; avatar: string }) => {
     if (!firebaseUser || !userDocRef) return;
@@ -134,27 +130,6 @@ function SettingsPageContent() {
                     >
                     <Button variant="outline">Editar Perfil</Button>
                 </EditProfileForm>
-            </CardContent>
-        </Card>
-
-        <Card>
-            <CardHeader>
-                <CardTitle>Privacidad</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                <Label htmlFor="share-activity" className="flex flex-col gap-1">
-                    <span>Compartir actividad</span>
-                    <span className="font-normal text-sm text-muted-foreground">
-                    Permite que tus amigos vean tus logros y rachas.
-                    </span>
-                </Label>
-                <Switch
-                    id="share-activity"
-                    checked={shareActivity}
-                    onCheckedChange={setShareActivity}
-                />
-                </div>
             </CardContent>
         </Card>
 
