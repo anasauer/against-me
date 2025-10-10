@@ -11,12 +11,6 @@ import {
   SidebarFooter,
 } from '@/components/ui/sidebar';
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
-import {
   LayoutDashboard,
   Target,
   Gift,
@@ -29,6 +23,12 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useUser } from '@/firebase';
 import { SidebarLogo } from '../sidebar-logo';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 const menuItems = [
   { href: '/', label: 'Panel', icon: LayoutDashboard },
@@ -44,6 +44,10 @@ const menuItems = [
 export function AppSidebar() {
   const pathname = usePathname();
   const { user } = useUser();
+
+  if (pathname === '/settings') {
+    return null; // Don't render sidebar on settings page
+  }
 
   return (
     <Sidebar>
