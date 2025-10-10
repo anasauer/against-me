@@ -2,7 +2,7 @@
 
 import { useUser, useFirestore, useDoc } from '@/firebase';
 import { useRouter, usePathname } from 'next/navigation';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { Logo } from './logo';
 import { doc } from 'firebase/firestore';
 import { Loader2 } from 'lucide-react';
@@ -27,51 +27,50 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   const [isVerified, setIsVerified] = useState(false);
   const isLoading = authLoading || (user && userLoading);
 
-  const previousIsLoading = useRef(true);
 
   useEffect(() => {
-    // Only run the logic when the loading state changes from true to false
-    if (previousIsLoading.current && !isLoading) {
-      const isPublic = publicRoutes.includes(pathname);
-      const isOnboarding = pathname === onboardingRoute;
+    // Wait until loading is fully complete before running any logic.
+    if (isLoading) {
+      return;
+    }
+    
+    const isPublic = publicRoutes.includes(pathname);
+    const isOnboarding = pathname === onboardingRoute;
 
-      // Not logged in
-      if (!user) {
-        if (!isPublic) {
-          router.push('/login');
-        } else {
-          setIsVerified(true);
-        }
-        return;
+    // Not logged in
+    if (!user) {
+      if (!isPublic) {
+        router.push('/login');
+      } else {
+        setIsVerified(true);
       }
-
-      // Logged in
-      const hasCompletedOnboarding = userData?.hasCompletedOnboarding === true;
-
-      if (isPublic) {
-        router.push('/');
-        return;
-      }
-
-      if (!hasCompletedOnboarding && !isOnboarding) {
-        router.push(onboardingRoute);
-        return;
-      }
-
-      if (hasCompletedOnboarding && isOnboarding) {
-        router.push('/');
-        return;
-      }
-
-      // If no redirection is needed, mark as verified to show children
-      setIsVerified(true);
+      return;
     }
 
-    // Update the ref to the current loading state for the next render
-    previousIsLoading.current = isLoading;
+    // Logged in
+    const hasCompletedOnboarding = userData?.hasCompletedOnboarding === true;
+    
+    if (isPublic) {
+      router.push('/');
+      return;
+    }
+
+    if (!hasCompletedOnboarding && !isOnboarding) {
+      router.push(onboardingRoute);
+      return;
+    }
+
+    if (hasCompletedOnboarding && isOnboarding) {
+      router.push('/');
+      return;
+    }
+
+    // If no redirection is needed, mark as verified to show children
+    setIsVerified(true);
+
   }, [isLoading, user, userData, pathname, router]);
 
-  if (!isVerified) {
+  if (isLoading || !isVerified) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-background">
         <Logo className="w-24 h-24 mb-4 animate-pulse" />
