@@ -52,20 +52,15 @@ export default function ProfilePage() {
     totalChallenges > 0
       ? Math.round((completedChallengesCount / totalChallenges) * 100)
       : 0;
-  
-  const isLoading = authLoading || (firebaseUser && userLoading);
 
   const handleSave = (data: { name: string; avatar: string }) => {
     if (!firebaseUser || !userDocRef) return;
     
-    // Update Firebase Auth profile
     updateAuthProfile(firebaseUser, {
       displayName: data.name,
       photoURL: data.avatar,
     }).catch(console.error);
 
-    // Update Firestore document
-    // Use `setDoc` with merge to create the document if it doesn't exist
     setDoc(userDocRef, { name: data.name, avatar: data.avatar }, { merge: true })
       .then(() => {
         toast({
@@ -99,7 +94,7 @@ export default function ProfilePage() {
     }
   };
 
-  if (isLoading) {
+  if (authLoading) {
     return (
       <div className="flex flex-col h-full">
         <AppHeader title="Perfil" />
@@ -133,10 +128,7 @@ export default function ProfilePage() {
     );
   }
 
-  // This is the key change: Even if the userProfile doesn't exist,
-  // we can still render the page with info from firebaseUser and allow logout.
   if (!firebaseUser) {
-    // This case should be handled by AuthGuard, but it's good practice.
      return (
         <div className="flex h-full items-center justify-center">
             <p>Por favor, inicia sesión para ver tu perfil.</p>
@@ -144,7 +136,6 @@ export default function ProfilePage() {
     );
   }
   
-  // Use data from firebaseUser as a fallback if userProfile is missing.
   const displayName = userProfile?.name || firebaseUser.displayName || 'Usuario';
   const displayAvatar = userProfile?.avatar || firebaseUser.photoURL || '';
 
@@ -160,7 +151,7 @@ export default function ProfilePage() {
             </Avatar>
             <CardTitle className="text-3xl">{displayName}</CardTitle>
             <p className="text-muted-foreground">
-              {userProfile ? 'Te uniste en 2024' : 'Finaliza tu registro para ver más.'}
+              {userLoading ? 'Cargando perfil...' : !userProfile ? 'Finaliza tu registro para ver más.' : 'Te uniste en 2024'}
             </p>
           </CardHeader>
           <CardContent className="text-center">
