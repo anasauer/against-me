@@ -44,7 +44,7 @@ export default function ProfilePage() {
   }, [firebaseUser, firestore]);
   const { data: challenges, loading: challengesLoading } = useCollection<Challenge>(challengesQuery);
 
-  const [shareActivity, setShareActivity] = useState(true);
+  const [shareActivity, setShareActivity] = useState(false);
 
   const completedChallengesCount = useMemo(() => challenges?.filter((c) => c.isCompleted).length ?? 0, [challenges]);
   const totalChallenges = challenges?.length ?? 0;
