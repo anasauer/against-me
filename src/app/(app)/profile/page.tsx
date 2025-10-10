@@ -158,7 +158,9 @@ export default function ProfilePage() {
             <EditProfileForm
               user={{ name: displayName, avatar: displayAvatar }}
               onSave={handleSave}
-            />
+            >
+              <Button>Editar Perfil</Button>
+            </EditProfileForm>
           </CardContent>
         </Card>
 

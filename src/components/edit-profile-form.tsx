@@ -37,12 +37,13 @@ const formSchema = z.object({
 
 // A simplified user type for the form props
 type UserFormProps = {
+  children: React.ReactNode;
   user: { name: string; avatar: string };
   onSave: (data: z.infer<typeof formSchema>) => void;
 };
 
 
-export function EditProfileForm({ user, onSave }: UserFormProps) {
+export function EditProfileForm({ children, user, onSave }: UserFormProps) {
   const [open, setOpen] = useState(false);
   const [preview, setPreview] = useState(user.avatar);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -94,7 +95,7 @@ export function EditProfileForm({ user, onSave }: UserFormProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
-        <Button>Editar Perfil</Button>
+        {children}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
