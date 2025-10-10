@@ -73,18 +73,7 @@ export const challenges: Challenge[] = [
   },
 ];
 
-export const receivedChallenges: ReceivedChallenge[] = [
-  {
-    id: 'rc1',
-    title: '¡Completa tu primer reto!',
-    from: {
-      name: 'AgainstMe',
-      avatar: '', // Force fallback
-      avatarHint: 'app logo',
-    },
-    reward: '10 puntos de bonificación',
-  },
-];
+export const receivedChallenges: ReceivedChallenge[] = [];
 
 
 export const rewards: Reward[] = [
