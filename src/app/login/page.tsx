@@ -21,7 +21,8 @@ import {
 } from 'firebase/auth';
 import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -31,6 +32,8 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [unauthorizedDomain, setUnauthorizedDomain] = useState<string | null>(null);
 
   useEffect(() => {
     // If user is already logged in, redirect to the main page.
@@ -38,30 +41,57 @@ export default function LoginPage() {
       router.push('/');
     }
   }, [user, loading, router]);
+  
+  useEffect(() => {
+    // Determine the domain to show for the unauthorized domain error.
+    if (typeof window !== 'undefined') {
+       // For environments like Firebase Studio, the origin is the correct URL to authorize.
+       setUnauthorizedDomain(window.location.origin);
+    }
+  }, []);
+
+  const handleAuthError = (error: any) => {
+     console.error(error);
+     setIsSubmitting(false);
+
+    if (error.code === 'auth/unauthorized-domain') {
+       setAuthError('unauthorized-domain');
+       return;
+    }
+
+    setAuthError('generic');
+    let description = 'Las credenciales son incorrectas. Por favor, inténtalo de nuevo.';
+      if (error.code === 'auth/account-exists-with-different-credential') {
+        description = 'Ya existe una cuenta con este correo electrónico. Intenta iniciar sesión con otro método.';
+      } else if (error.code === 'auth/popup-closed-by-user') {
+        description = 'La ventana de inicio de sesión fue cerrada. Por favor, inténtalo de nuevo.';
+      }
+      toast({
+        title: 'Error al iniciar sesión',
+        description: description,
+        variant: 'destructive',
+      });
+  }
+
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!auth) return;
     setIsSubmitting(true);
+    setAuthError(null);
     try {
       await signInWithEmailAndPassword(auth, email, password);
       toast({ title: '¡Bienvenido de nuevo!' });
       // The redirect will be handled by the useEffect hook.
     } catch (error: any) {
-      console.error(error);
-      toast({
-        title: 'Error al iniciar sesión',
-        description:
-          'Las credenciales son incorrectas. Por favor, inténtalo de nuevo.',
-        variant: 'destructive',
-      });
-      setIsSubmitting(false);
+      handleAuthError(error);
     }
   };
 
   const handleGoogleLogin = async () => {
     if (!auth) return;
     setIsSubmitting(true);
+    setAuthError(null);
     try {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
@@ -69,19 +99,7 @@ export default function LoginPage() {
        // The redirect will be handled by the useEffect hook.
     } catch (error: any)
     {
-      console.error(error);
-      let description = 'No se pudo iniciar sesión con Google. Por favor, inténtalo de nuevo.';
-      if (error.code === 'auth/account-exists-with-different-credential') {
-        description = 'Ya existe una cuenta con este correo electrónico. Intenta iniciar sesión con otro método.';
-      } else if (error.code === 'auth/popup-closed-by-user') {
-        description = 'La ventana de inicio de sesión fue cerrada. Por favor, inténtalo de nuevo.';
-      }
-      toast({
-        title: 'Error con Google',
-        description: description,
-        variant: 'destructive',
-      });
-      setIsSubmitting(false);
+      handleAuthError(error);
     }
   };
 
@@ -108,6 +126,22 @@ export default function LoginPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {authError === 'unauthorized-domain' && unauthorizedDomain && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Dominio no Autorizado</AlertTitle>
+              <AlertDescription>
+                <p className="mb-2">Para iniciar sesión, necesitas autorizar este dominio en Firebase:</p>
+                <code className="font-mono text-sm bg-red-100 dark:bg-red-900/50 p-1 rounded break-all select-all">{unauthorizedDomain}</code>
+                <ol className="list-decimal list-inside mt-2 text-xs">
+                  <li>Copia el dominio de arriba.</li>
+                  <li>Ve a la Consola de Firebase &rarr; Authentication &rarr; Settings.</li>
+                  <li>Añádelo a la lista de "Authorized domains".</li>
+                </ol>
+              </AlertDescription>
+            </Alert>
+          )}
+
           <form onSubmit={handleLogin}>
             <div className="grid gap-4">
               <div className="grid gap-2">
