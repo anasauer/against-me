@@ -76,9 +76,8 @@ export default function SignupPage() {
       await setDoc(userDocRef, userData);
 
       toast({ title: '¡Cuenta creada con éxito!' });
-      // After signup, user state will change, and AuthGuard will redirect to /welcome
-      // No need to push router here, as the user is not yet considered fully "onboarded"
-      // The AuthGuard will see `hasCompletedOnboarding: false` and redirect correctly.
+      // After signup, explicitly redirect to the welcome page
+      router.push('/welcome');
 
     } catch (error: any) {
       console.error(error);
