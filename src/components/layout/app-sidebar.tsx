@@ -11,13 +11,18 @@ import {
   SidebarFooter,
 } from '@/components/ui/sidebar';
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import {
   LayoutDashboard,
   Target,
   Gift,
   Users,
   Swords,
   History,
-  Settings,
   UserPlus,
   User,
 } from 'lucide-react';
