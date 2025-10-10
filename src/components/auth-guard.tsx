@@ -2,7 +2,7 @@
 
 import { useUser, useFirestore, useDoc } from '@/firebase';
 import { useRouter, usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Logo } from './logo';
 import { doc } from 'firebase/firestore';
 import { Loader2 } from 'lucide-react';
@@ -25,49 +25,51 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   const { data: userData, loading: userLoading } = useDoc<AppUser>(userDocRef);
 
   const [isVerified, setIsVerified] = useState(false);
-
   const isLoading = authLoading || (user && userLoading);
 
+  const previousIsLoading = useRef(true);
+
   useEffect(() => {
-    if (isLoading) {
-      return; // Wait until all loading is done
-    }
+    // Only run the logic when the loading state changes from true to false
+    if (previousIsLoading.current && !isLoading) {
+      const isPublic = publicRoutes.includes(pathname);
+      const isOnboarding = pathname === onboardingRoute;
 
-    const isPublic = publicRoutes.includes(pathname);
-    const isOnboarding = pathname === onboardingRoute;
-
-    // Not logged in
-    if (!user) {
-      if (!isPublic) {
-        router.push('/login');
-      } else {
-        setIsVerified(true);
+      // Not logged in
+      if (!user) {
+        if (!isPublic) {
+          router.push('/login');
+        } else {
+          setIsVerified(true);
+        }
+        return;
       }
-      return;
+
+      // Logged in
+      const hasCompletedOnboarding = userData?.hasCompletedOnboarding === true;
+
+      if (isPublic) {
+        router.push('/');
+        return;
+      }
+
+      if (!hasCompletedOnboarding && !isOnboarding) {
+        router.push(onboardingRoute);
+        return;
+      }
+
+      if (hasCompletedOnboarding && isOnboarding) {
+        router.push('/');
+        return;
+      }
+
+      // If no redirection is needed, mark as verified to show children
+      setIsVerified(true);
     }
 
-    // Logged in
-    const hasCompletedOnboarding = userData?.hasCompletedOnboarding === true;
-
-    if (isPublic) {
-      router.push('/');
-      return;
-    }
-
-    if (!hasCompletedOnboarding && !isOnboarding) {
-      router.push(onboardingRoute);
-      return;
-    }
-
-    if (hasCompletedOnboarding && isOnboarding) {
-      router.push('/');
-      return;
-    }
-
-    // If no redirection is needed, mark as verified to show children
-    setIsVerified(true);
-
-  }, [user, userData, isLoading, pathname, router]);
+    // Update the ref to the current loading state for the next render
+    previousIsLoading.current = isLoading;
+  }, [isLoading, user, userData, pathname, router]);
 
   if (!isVerified) {
     return (
