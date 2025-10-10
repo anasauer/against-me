@@ -39,7 +39,7 @@ const formSchema = z.object({
   title: z.string().min(3, 'El título debe tener al menos 3 caracteres.'),
   description: z.string().optional(),
   points: z.coerce.number().min(1, 'Los puntos deben ser al menos 1.'),
-  recurrence: z.enum(['none', 'daily', 'weekly', 'biweekly', 'monthly']),
+  recurrence: z.enum(['none', 'daily', 'weekly', 'biweekly', 'thrice-weekly', 'monthly']),
 });
 
 type CreateChallengeFormProps = {
@@ -151,6 +151,7 @@ export function CreateChallengeForm({ children, onChallengeCreated }: CreateChal
                       <SelectItem value="daily">Cada día</SelectItem>
                       <SelectItem value="weekly">Una vez por semana</SelectItem>
                       <SelectItem value="biweekly">Dos veces por semana</SelectItem>
+                      <SelectItem value="thrice-weekly">Tres veces por semana</SelectItem>
                       <SelectItem value="monthly">Una vez al mes</SelectItem>
                     </SelectContent>
                   </Select>
