@@ -1,6 +1,7 @@
 
 export type UserProfile = {
   name: string;
+  email?: string;
   avatar: string;
   points: number;
   dailyStreak: number;
@@ -17,7 +18,7 @@ export type Challenge = {
   type: 'daily' | 'weekly' | 'special';
   isCompleted: boolean;
   userId?: string;
-  recurrence?: 'none' | 'daily' | 'weekly' | 'biweekly' | 'monthly';
+  recurrence?: 'none' | 'daily' | 'weekly' | 'biweekly' | 'thrice-weekly' | 'monthly';
 };
 
 export type FriendRequest = {
