@@ -9,7 +9,7 @@ export type Challenge = {
   type: 'daily' | 'weekly' | 'special';
   isCompleted: boolean;
   userId?: string;
-  recurrence?: 'none' | 'daily' | 'weekly' | 'biweekly' | 'monthly';
+  recurrence?: 'none' | 'daily' | 'weekly' | 'biweekly' | 'thrice-weekly' | 'monthly';
 };
 
 export type ReceivedChallenge = {
@@ -78,7 +78,7 @@ export const receivedChallenges: ReceivedChallenge[] = [
     id: 'rc1',
     title: '¡Completa tu primer reto!',
     from: {
-      name: 'Questify',
+      name: 'AgainstMe',
       avatar: getPlaceholderImage('questify-avatar')?.imageUrl ?? '',
       avatarHint: getPlaceholderImage('questify-avatar')?.imageHint ?? 'app logo',
     },
