@@ -39,7 +39,7 @@ export default function AddFriendPage() {
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!searchQuery.trim() || !currentUser) return;
+    if (!searchQuery.trim() || !currentUser || !firestore) return;
 
     setLoading(true);
     setSearched(true);
@@ -81,7 +81,7 @@ export default function AddFriendPage() {
   };
 
   const handleSendRequest = (receiverId: string) => {
-    if (!currentUser || !currentUser.displayName) return;
+    if (!currentUser || !currentUser.displayName || !firestore) return;
     
     const requestsRef = collection(firestore, 'friendRequests');
     const requestData = {
