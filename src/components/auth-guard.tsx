@@ -5,8 +5,11 @@ import { usePathname, useRouter } from 'next/navigation';
 import { Logo } from './logo';
 import { Loader2 } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
-import { doc } from 'firebase/firestore';
+import { doc, setDoc } from 'firebase/firestore';
 import type { UserProfile } from '@/lib/types';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
+
 
 const publicRoutes = ['/login', '/signup'];
 const welcomeRoute = '/welcome';
@@ -38,8 +41,37 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   const isLoading = authLoading || (user && userLoading);
 
   useEffect(() => {
-    // Wait until loading is complete before making routing decisions
     if (isLoading) {
+      return;
+    }
+
+    if (user && userData === null) {
+      // User is authenticated, but no user document exists. Create it.
+      // This handles users signing up with social providers like Google.
+      const newUserProfile: UserProfile = {
+        name: user.displayName || 'Nuevo Usuario',
+        email: user.email?.toLowerCase() || '',
+        avatar: user.photoURL || '',
+        points: 0,
+        dailyStreak: 0,
+        weeklyStreak: 0,
+        friends: [],
+        hasCompletedOnboarding: false,
+      };
+
+      if (userDocRef) {
+        setDoc(userDocRef, newUserProfile)
+          .catch((error) => {
+             const permissionError = new FirestorePermissionError({
+              path: userDocRef.path,
+              operation: 'create',
+              requestResourceData: newUserProfile,
+            });
+            errorEmitter.emit('permission-error', permissionError);
+          });
+      }
+      // The useDoc hook will automatically update `userData` after creation,
+      // and the effect will re-run to handle redirection.
       return; 
     }
 
@@ -50,19 +82,15 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     let targetRoute: string | null = null;
 
     if (!user) {
-      // User is not logged in.
       if (!isPublicRoute) {
         targetRoute = '/login';
       }
     } else {
-      // User is logged in.
       if (!hasCompletedOnboarding) {
-        // User has not completed onboarding, must be on welcome route
         if (!isWelcomeRoute) {
           targetRoute = welcomeRoute;
         }
       } else {
-        // User has completed onboarding, should not be on public or welcome routes
         if (isPublicRoute || isWelcomeRoute) {
           targetRoute = '/';
         }
@@ -72,28 +100,30 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     if (targetRoute && pathname !== targetRoute) {
       router.push(targetRoute);
     }
-  }, [user, userData, isLoading, pathname, router]);
+  }, [user, userData, isLoading, pathname, router, userDocRef]);
 
-  // While loading, show the loader to prevent content flash
+
+  // While loading, or if redirection is pending, show the loader.
   if (isLoading) {
     return <Loader />;
   }
-  
-  // Prevent rendering children if a redirection is pending
+
   const isPublicRoute = publicRoutes.includes(pathname);
   const isWelcomeRoute = pathname === welcomeRoute;
+  const hasCompletedOnboarding = userData?.hasCompletedOnboarding;
 
   if (!user && !isPublicRoute) {
     return <Loader />;
   }
-
-  if (user && userData?.hasCompletedOnboarding === false && !isWelcomeRoute) {
-     return <Loader />;
+  
+  if (user && !hasCompletedOnboarding && !isWelcomeRoute) {
+    return <Loader />;
   }
 
-  if (user && userData?.hasCompletedOnboarding && (isPublicRoute || isWelcomeRoute)) {
-     return <Loader />;
+  if (user && hasCompletedOnboarding && (isPublicRoute || isWelcomeRoute)) {
+    return <Loader />;
   }
+
 
   return <>{children}</>;
 }
