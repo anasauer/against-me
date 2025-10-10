@@ -54,7 +54,7 @@ function HomePageContent() {
     const newChallenge = {
       title: challenge.title,
       description: `Reto de ${challenge.from.name}. Recompensa: ${challenge.reward}`,
-      points: 150, // Assign some points, this could be dynamic later
+      points: 10, // Assign some points, this could be dynamic later
       type: 'special' as const,
       isCompleted: false,
       userId: user.uid,

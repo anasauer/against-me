@@ -82,7 +82,7 @@ export const receivedChallenges: ReceivedChallenge[] = [
       avatar: '', // Force fallback
       avatarHint: 'app logo',
     },
-    reward: '150 puntos de bonificación',
+    reward: '10 puntos de bonificación',
   },
 ];
 
