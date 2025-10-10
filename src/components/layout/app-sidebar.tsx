@@ -17,7 +17,7 @@ import {
   Users,
   Swords,
   History,
-  User as UserIcon,
+  Settings,
   UserPlus,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -32,7 +32,7 @@ const menuItems = [
   { href: '/add-friend', label: 'Añadir Amigos', icon: UserPlus },
   { href: '/history', label: 'Historial', icon: History },
   { href: '/challenge-friend', label: 'Retar', icon: Swords },
-  { href: '/profile', label: 'Perfil', icon: UserIcon },
+  { href: '/settings', label: 'Configuración', icon: Settings },
 ];
 
 export function AppSidebar() {
@@ -66,7 +66,7 @@ export function AppSidebar() {
       </SidebarContent>
       <SidebarFooter>
         {user ? (
-          <Link href="/profile" className="flex items-center gap-3">
+          <Link href="/settings" className="flex items-center gap-3">
             <Avatar>
               {user.photoURL && <AvatarImage src={user.photoURL} />}
               <AvatarFallback>

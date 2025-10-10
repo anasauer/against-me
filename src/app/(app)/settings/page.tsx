@@ -1,0 +1,168 @@
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { AppHeader } from '@/components/layout/header';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { EditProfileForm } from '@/components/edit-profile-form';
+import { Button } from '@/components/ui/button';
+import { useAuth, useUser, useFirestore, useDoc } from '@/firebase';
+import { signOut, updateProfile as updateAuthProfile } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
+import { useToast } from '@/hooks/use-toast';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
+import { Skeleton } from '@/components/ui/skeleton';
+
+type AppUser = {
+  name: string;
+  avatar: string;
+};
+
+export default function SettingsPage() {
+  const router = useRouter();
+  const auth = useAuth();
+  const firestore = useFirestore();
+  const { user: firebaseUser, loading: authLoading } = useUser();
+  const { toast } = useToast();
+
+  const userDocRef = firebaseUser ? doc(firestore, 'users', firebaseUser.uid) : null;
+  const { data: userProfile, loading: userLoading } = useDoc<AppUser>(userDocRef);
+
+  const [shareActivity, setShareActivity] = useState(false);
+
+  const handleSave = (data: { name: string; avatar: string }) => {
+    if (!firebaseUser || !userDocRef) return;
+    
+    updateAuthProfile(firebaseUser, {
+      displayName: data.name,
+      photoURL: data.avatar,
+    }).catch(console.error);
+
+    setDoc(userDocRef, { name: data.name, avatar: data.avatar }, { merge: true })
+      .then(() => {
+        toast({
+          title: '¡Perfil Actualizado!',
+          description: 'Tu nombre y foto de perfil han sido guardados.',
+        });
+      })
+      .catch((error) => {
+        const permissionError = new FirestorePermissionError({
+          path: userDocRef.path,
+          operation: 'update',
+          requestResourceData: data,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+      });
+  };
+
+  const handleLogout = async () => {
+    if (!auth) return;
+    try {
+      await signOut(auth);
+      toast({ title: 'Has cerrado sesión.' });
+      router.push('/login');
+    } catch (error) {
+      console.error('Error signing out: ', error);
+      toast({
+        title: 'Error',
+        description: 'No se pudo cerrar la sesión. Inténtalo de nuevo.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  if (authLoading || userLoading) {
+    return (
+      <div className="flex flex-col h-full">
+        <AppHeader title="Configuración" />
+        <main className="flex-1 p-4 md:p-6 space-y-6 max-w-4xl mx-auto">
+           <Skeleton className="h-40 w-full" />
+           <Skeleton className="h-40 w-full" />
+           <Skeleton className="h-24 w-full" />
+        </main>
+      </div>
+    );
+  }
+
+  if (!firebaseUser) {
+     return (
+        <div className="flex h-full items-center justify-center">
+            <p>Por favor, inicia sesión para ver tu configuración.</p>
+        </div>
+    );
+  }
+  
+  const displayName = userProfile?.name || firebaseUser.displayName || 'Usuario';
+  const displayAvatar = userProfile?.avatar || firebaseUser.photoURL || '';
+
+  return (
+    <div className="flex flex-col h-full">
+      <AppHeader title="Configuración" />
+      <main className="flex-1 p-4 md:p-6 space-y-6 max-w-4xl mx-auto">
+        
+        <Card>
+            <CardHeader>
+                <CardTitle>Perfil</CardTitle>
+                <CardDescription>Así es como te verán los demás en la aplicación.</CardDescription>
+            </CardHeader>
+            <CardContent className="flex items-center gap-6">
+                <Avatar className="w-20 h-20">
+                    <AvatarImage src={displayAvatar} />
+                    <AvatarFallback>{displayName.charAt(0)}</AvatarFallback>
+                </Avatar>
+                <div className='flex-1'>
+                    <h3 className="text-xl font-semibold">{displayName}</h3>
+                    <p className="text-muted-foreground">{firebaseUser.email}</p>
+                </div>
+                 <EditProfileForm
+                    user={{ name: displayName, avatar: displayAvatar }}
+                    onSave={handleSave}
+                    >
+                    <Button variant="outline">Editar Perfil</Button>
+                </EditProfileForm>
+            </CardContent>
+        </Card>
+
+        <Card>
+            <CardHeader>
+                <CardTitle>Privacidad</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                <Label htmlFor="share-activity" className="flex flex-col gap-1">
+                    <span>Compartir actividad</span>
+                    <span className="font-normal text-sm text-muted-foreground">
+                    Permite que tus amigos vean tus logros y rachas.
+                    </span>
+                </Label>
+                <Switch
+                    id="share-activity"
+                    checked={shareActivity}
+                    onCheckedChange={setShareActivity}
+                />
+                </div>
+            </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Cuenta</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Button
+              variant="destructive"
+              className="w-full sm:w-auto"
+              onClick={handleLogout}
+            >
+              Cerrar sesión
+            </Button>
+          </CardContent>
+        </Card>
+      </main>
+    </div>
+  );
+}
