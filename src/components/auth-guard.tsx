@@ -27,17 +27,16 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   const [isVerified, setIsVerified] = useState(false);
   const isLoading = authLoading || (user && userLoading);
 
-
   useEffect(() => {
-    // Wait until loading is fully complete before running any logic.
+    // Only run navigation logic when loading is complete
     if (isLoading) {
       return;
     }
-    
+
     const isPublic = publicRoutes.includes(pathname);
     const isOnboarding = pathname === onboardingRoute;
 
-    // Not logged in
+    // Case 1: User is not logged in
     if (!user) {
       if (!isPublic) {
         router.push('/login');
@@ -47,30 +46,32 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    // Logged in
+    // Case 2: User is logged in
     const hasCompletedOnboarding = userData?.hasCompletedOnboarding === true;
-    
+
+    // If user is on a public page, redirect to home
     if (isPublic) {
       router.push('/');
       return;
     }
 
+    // If user hasn't completed onboarding, redirect to welcome (unless already there)
     if (!hasCompletedOnboarding && !isOnboarding) {
       router.push(onboardingRoute);
       return;
     }
 
+    // If user has completed onboarding but is on the welcome page, redirect to home
     if (hasCompletedOnboarding && isOnboarding) {
       router.push('/');
       return;
     }
 
-    // If no redirection is needed, mark as verified to show children
+    // If no redirection is needed, the user is verified
     setIsVerified(true);
-
   }, [isLoading, user, userData, pathname, router]);
 
-  if (isLoading || !isVerified) {
+  if (!isVerified) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-background">
         <Logo className="w-24 h-24 mb-4 animate-pulse" />
