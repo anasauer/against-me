@@ -29,11 +29,11 @@ const menuItems = [
   { href: '/', label: 'Panel', icon: LayoutDashboard },
   { href: '/challenges', label: 'Retos', icon: Target },
   { href: '/rewards', label: 'Recompensas', icon: Gift },
-  { href: '/profile', label: 'Perfil', icon: User },
   { href: '/social', label: 'Social', icon: Users },
   { href: '/add-friend', label: 'Añadir Amigos', icon: UserPlus },
   { href: '/history', label: 'Historial', icon: History },
   { href: '/challenge-friend', label: 'Retar', icon: Swords },
+  { href: '/profile', label: 'Perfil', icon: User },
 ];
 
 export function AppSidebar() {
