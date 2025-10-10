@@ -566,34 +566,27 @@ const SidebarMenuButton = React.forwardRef<
         {...props}
       />
     )
-    
-    // If it is a child, we can't wrap it in a tooltip.
-    if (asChild) {
-      return button;
-    }
 
-
-    if (!tooltip) {
-      return button
-    }
-
-    if (typeof tooltip === "string") {
-      tooltip = {
-        children: tooltip,
-      }
-    }
-
-    return (
+    const withTooltip = tooltip && (
       <Tooltip>
         <TooltipTrigger asChild>{button}</TooltipTrigger>
         <TooltipContent
           side="right"
           align="center"
           hidden={state !== "collapsed" || isMobile}
-          {...tooltip}
+          {...(typeof tooltip === "string" ? { children: tooltip } : tooltip)}
         />
       </Tooltip>
-    )
+    );
+    
+    if (asChild) {
+      // If `asChild` is true, we assume the child is a Link or similar component that handles navigation.
+      // We wrap it in a tooltip if needed, but the child handles the click.
+      return withTooltip || button;
+    }
+    
+    // If not `asChild`, it's a regular button. Tooltip wrapping is fine.
+    return withTooltip || button;
   }
 )
 SidebarMenuButton.displayName = "SidebarMenuButton"
