@@ -28,7 +28,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   const isLoading = authLoading || (user && userLoading);
 
   useEffect(() => {
-    // Only run navigation logic when loading is complete
+    // Don't run any logic until all data is loaded
     if (isLoading) {
       return;
     }
@@ -49,26 +49,24 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     // Case 2: User is logged in
     const hasCompletedOnboarding = userData?.hasCompletedOnboarding === true;
 
-    // If user is on a public page, redirect to home
     if (isPublic) {
       router.push('/');
       return;
     }
 
-    // If user hasn't completed onboarding, redirect to welcome (unless already there)
     if (!hasCompletedOnboarding && !isOnboarding) {
       router.push(onboardingRoute);
       return;
     }
 
-    // If user has completed onboarding but is on the welcome page, redirect to home
     if (hasCompletedOnboarding && isOnboarding) {
       router.push('/');
       return;
     }
 
-    // If no redirection is needed, the user is verified
+    // If no redirection is needed, the user is verified to see the page
     setIsVerified(true);
+    
   }, [isLoading, user, userData, pathname, router]);
 
   if (!isVerified) {
