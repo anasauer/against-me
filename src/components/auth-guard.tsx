@@ -24,8 +24,6 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   const { data: userData, loading: userLoading } = useDoc<AppUser>(userDocRef);
 
   const isLoading = authLoading || (user && userLoading);
-  const isPublic = publicRoutes.includes(pathname);
-  const isOnboarding = pathname === onboardingRoute;
 
   useEffect(() => {
     if (isLoading) {
@@ -33,33 +31,45 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     }
 
     const hasCompletedOnboarding = userData?.hasCompletedOnboarding === true;
-    let redirectPath: string | null = null;
+    const isPublic = publicRoutes.includes(pathname);
+    const isOnboarding = pathname === onboardingRoute;
+    let targetPath: string | null = null;
 
-    if (!user && !isPublic) {
-      // Si no hay usuario y no es una página pública, redirigir al login
-      redirectPath = '/login';
-    } else if (user) {
-      if (isPublic) {
-        // Si hay usuario y está en una página pública, redirigir al panel
-        redirectPath = '/';
-      } else if (!hasCompletedOnboarding && !isOnboarding) {
-        // Si hay usuario, no ha completado el onboarding y no está en la página de onboarding, redirigir a welcome
-        redirectPath = onboardingRoute;
-      } else if (hasCompletedOnboarding && isOnboarding) {
-        // Si hay usuario, ya completó el onboarding y está en la página de welcome, redirigir al panel
-        redirectPath = '/';
+    if (user) {
+      // Usuario autenticado
+      if (hasCompletedOnboarding) {
+        if (isPublic || isOnboarding) {
+          targetPath = '/'; // Ya completó onboarding, debe ir al panel
+        }
+      } else {
+        if (!isOnboarding) {
+          targetPath = onboardingRoute; // No ha completado onboarding, debe ir a welcome
+        }
+      }
+    } else {
+      // No hay usuario
+      if (!isPublic) {
+        targetPath = '/login'; // Debe ir a login si intenta acceder a una ruta privada
       }
     }
-    
-    // Solo redirigir si es necesario y la ruta actual no es ya la de destino
-    if (redirectPath && redirectPath !== pathname) {
-      router.push(redirectPath);
+
+    if (targetPath && targetPath !== pathname) {
+      router.push(targetPath);
     }
-  }, [isLoading, user, userData, pathname, isPublic, isOnboarding, router]);
+  }, [isLoading, user, userData, pathname, router]);
 
-
-  // Mostrar el cargador mientras se determina el estado, o si una redirección está en curso.
-  if (isLoading || (!user && !isPublic) || (user && !userData?.hasCompletedOnboarding && !isOnboarding)) {
+  // Determinar si mostrar el cargador o el contenido
+  // Muestra el cargador si:
+  // 1. Aún estamos cargando datos.
+  // 2. No hay usuario y estamos en una ruta privada (esperando redirección).
+  // 3. Hay usuario pero no ha completado el onboarding y no está en la página de welcome (esperando redirección).
+  // 4. Hay usuario, completó el onboarding pero está en una página pública (esperando redirección a '/').
+  const hasCompletedOnboarding = userData?.hasCompletedOnboarding === true;
+  if (isLoading || 
+      (!user && !publicRoutes.includes(pathname)) ||
+      (user && !hasCompletedOnboarding && pathname !== onboardingRoute) ||
+      (user && hasCompletedOnboarding && (publicRoutes.includes(pathname) || pathname === onboardingRoute))
+     ) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-background">
         <Logo className="w-24 h-24 mb-4 animate-pulse" />
@@ -71,6 +81,6 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // Si todas las condiciones se cumplen, mostrar el contenido
+  // Si no hay que redirigir y no está cargando, mostrar el contenido
   return <>{children}</>;
 }
