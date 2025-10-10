@@ -115,14 +115,14 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   const isWelcomeRoute = pathname === welcomeRoute;
   const hasCompletedOnboarding = userData?.hasCompletedOnboarding;
   
-  // Render a loader if a redirect is imminent
+  // Render a loader if a redirect is imminent to prevent flashing wrong content
   if (!user && !isPublicRoute) {
      return <Loader />;
   }
-  if (user && !hasCompletedOnboarding && !isWelcomeRoute) {
+  if (user && hasCompletedOnboarding === false && !isWelcomeRoute) {
      return <Loader />;
   }
-   if (user && hasCompletedOnboarding && (isPublicRoute || isWelcomeRoute)) {
+   if (user && hasCompletedOnboarding === true && (isPublicRoute || isWelcomeRoute)) {
      return <Loader />;
   }
 
