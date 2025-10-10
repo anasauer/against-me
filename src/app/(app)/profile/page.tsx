@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useMemo, useState } from 'react';
@@ -54,7 +53,7 @@ export default function ProfilePage() {
       ? Math.round((completedChallengesCount / totalChallenges) * 100)
       : 0;
   
-  const isLoading = authLoading || (firebaseUser && (userLoading || challengesLoading));
+  const isLoading = authLoading || userLoading;
 
   const handleSave = (data: { name: string; avatar: string }) => {
     if (!userProfile || !firebaseUser || !userDocRef) return;
