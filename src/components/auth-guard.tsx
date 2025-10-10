@@ -2,7 +2,7 @@
 
 import { useUser, useFirestore, useDoc } from '@/firebase';
 import { useRouter, usePathname } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Logo } from './logo';
 import { doc } from 'firebase/firestore';
 import { Loader2 } from 'lucide-react';
@@ -26,50 +26,37 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   const isLoading = authLoading || (user && userLoading);
 
   useEffect(() => {
+    // Solo ejecutar la lógica cuando la carga haya terminado.
     if (isLoading) {
-      return; // No hacer nada hasta que todo esté cargado
+      return;
     }
 
-    const hasCompletedOnboarding = userData?.hasCompletedOnboarding === true;
     const isPublic = publicRoutes.includes(pathname);
     const isOnboarding = pathname === onboardingRoute;
-    let targetPath: string | null = null;
 
     if (user) {
       // Usuario autenticado
+      const hasCompletedOnboarding = userData?.hasCompletedOnboarding === true;
+
       if (hasCompletedOnboarding) {
         if (isPublic || isOnboarding) {
-          targetPath = '/'; // Ya completó onboarding, debe ir al panel
+          router.push('/');
         }
       } else {
         if (!isOnboarding) {
-          targetPath = onboardingRoute; // No ha completado onboarding, debe ir a welcome
+          router.push(onboardingRoute);
         }
       }
     } else {
       // No hay usuario
       if (!isPublic) {
-        targetPath = '/login'; // Debe ir a login si intenta acceder a una ruta privada
+        router.push('/login');
       }
-    }
-
-    if (targetPath && targetPath !== pathname) {
-      router.push(targetPath);
     }
   }, [isLoading, user, userData, pathname, router]);
 
-  // Determinar si mostrar el cargador o el contenido
-  // Muestra el cargador si:
-  // 1. Aún estamos cargando datos.
-  // 2. No hay usuario y estamos en una ruta privada (esperando redirección).
-  // 3. Hay usuario pero no ha completado el onboarding y no está en la página de welcome (esperando redirección).
-  // 4. Hay usuario, completó el onboarding pero está en una página pública (esperando redirección a '/').
-  const hasCompletedOnboarding = userData?.hasCompletedOnboarding === true;
-  if (isLoading || 
-      (!user && !publicRoutes.includes(pathname)) ||
-      (user && !hasCompletedOnboarding && pathname !== onboardingRoute) ||
-      (user && hasCompletedOnboarding && (publicRoutes.includes(pathname) || pathname === onboardingRoute))
-     ) {
+  // Mostrar el cargador mientras se determina el estado.
+  if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-background">
         <Logo className="w-24 h-24 mb-4 animate-pulse" />
@@ -81,6 +68,48 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // Si no hay que redirigir y no está cargando, mostrar el contenido
+  // Lógica para determinar si mostrar el contenido o el cargador durante la redirección
+  const isPublic = publicRoutes.includes(pathname);
+  const isOnboarding = pathname === onboardingRoute;
+  if (user) {
+    const hasCompletedOnboarding = userData?.hasCompletedOnboarding === true;
+    if (hasCompletedOnboarding && (isPublic || isOnboarding)) {
+       // Estamos a punto de redirigir a '/', mostramos el loader
+       return (
+        <div className="flex flex-col items-center justify-center min-h-screen bg-background">
+          <Logo className="w-24 h-24 mb-4 animate-pulse" />
+          <p className="text-muted-foreground flex items-center">
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Cargando...
+          </p>
+        </div>
+      );
+    }
+    if (!hasCompletedOnboarding && !isOnboarding) {
+      // Estamos a punto de redirigir a '/welcome', mostramos el loader
+       return (
+        <div className="flex flex-col items-center justify-center min-h-screen bg-background">
+          <Logo className="w-24 h-24 mb-4 animate-pulse" />
+          <p className="text-muted-foreground flex items-center">
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Cargando...
+          </p>
+        </div>
+      );
+    }
+  } else if (!isPublic) {
+    // Estamos a punto de redirigir a '/login', mostramos el loader
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-background">
+        <Logo className="w-24 h-24 mb-4 animate-pulse" />
+        <p className="text-muted-foreground flex items-center">
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          Cargando...
+        </p>
+      </div>
+    );
+  }
+
+  // Si no hay redirección pendiente, mostrar el contenido
   return <>{children}</>;
 }
