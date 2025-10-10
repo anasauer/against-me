@@ -87,7 +87,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     return <Loader />;
   }
 
-  if (user && !userData?.hasCompletedOnboarding && !isWelcomeRoute) {
+  if (user && userData?.hasCompletedOnboarding === false && !isWelcomeRoute) {
      return <Loader />;
   }
 

@@ -5,7 +5,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { AppHeader } from '@/components/layout/header';
 import { StreakCounter } from '@/components/streak-counter';
 import { ChallengeList } from '@/components/challenge-list';
-import type { Challenge, ReceivedChallenge } from '@/lib/data';
+import type { ReceivedChallenge } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import { Gift, ShieldCheck } from 'lucide-react';
 import { ReceivedChallengeCard } from '@/components/received-challenge-card';
@@ -17,7 +17,7 @@ import { FirestorePermissionError } from '@/firebase/errors';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import type { UserProfile } from '@/lib/types';
+import type { UserProfile, Challenge } from '@/lib/types';
 
 const welcomeChallenge: ReceivedChallenge = {
   id: 'rc1',

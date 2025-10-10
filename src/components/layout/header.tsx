@@ -5,6 +5,7 @@ import { Coins } from 'lucide-react';
 import { useUser, useFirestore, useDoc } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { Skeleton } from '../ui/skeleton';
+import { useMemo } from 'react';
 
 type AppUser = {
   points: number;
@@ -14,7 +15,7 @@ export function AppHeader({ title }: { title: string }) {
   const { user } = useUser();
   const firestore = useFirestore();
 
-  const userDocRef = user ? doc(firestore, 'users', user.uid) : null;
+  const userDocRef = useMemo(() => user ? doc(firestore, 'users', user.uid) : null, [user, firestore]);
   const { data: appUser, loading: userLoading } = useDoc<AppUser>(userDocRef);
 
   const points = appUser?.points ?? 0;

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { AppHeader } from '@/components/layout/header';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -27,7 +27,7 @@ function SettingsPageContent() {
   const { user: firebaseUser, loading: authLoading } = useUser();
   const { toast } = useToast();
 
-  const userDocRef = firebaseUser ? doc(firestore, 'users', firebaseUser.uid) : null;
+  const userDocRef = useMemo(() => firebaseUser ? doc(firestore, 'users', firebaseUser.uid) : null, [firebaseUser, firestore]);
   const { data: userProfile, loading: userLoading } = useDoc<AppUser>(userDocRef);
 
   const handleSave = (data: { name: string; avatar: string }) => {

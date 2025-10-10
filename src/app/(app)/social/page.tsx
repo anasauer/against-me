@@ -25,7 +25,7 @@ function FriendList() {
   const friendsQuery = useMemo(() => {
     if (friendIds.length === 0) return null;
     return query(collection(firestore, 'users'), where(documentId(), 'in', friendIds));
-  }, [friendIds]);
+  }, [firestore, friendIds]);
 
   const { data: friends, loading } = useCollection<UserProfile & {id: string}>(friendsQuery);
 

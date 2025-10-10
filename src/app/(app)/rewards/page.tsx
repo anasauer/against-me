@@ -10,11 +10,12 @@ import { useUser, useFirestore, useDoc } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { UserProfile } from '@/lib/types';
+import { useMemo } from 'react';
 
 export default function RewardsPage() {
   const { user } = useUser();
   const firestore = useFirestore();
-  const userDocRef = user ? doc(firestore, 'users', user.uid) : null;
+  const userDocRef = useMemo(() => (user ? doc(firestore, 'users', user.uid) : null), [user, firestore]);
   const { data: userProfile, loading: userLoading } = useDoc<UserProfile>(userDocRef);
 
   const points = userProfile?.points ?? 0;

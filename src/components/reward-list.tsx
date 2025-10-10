@@ -14,6 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useDoc } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import type { UserProfile } from '@/lib/types';
+import { useMemo } from 'react';
 
 
 export function RewardList({ rewards }: { rewards: Reward[] }) {
@@ -21,7 +22,7 @@ export function RewardList({ rewards }: { rewards: Reward[] }) {
   const { user: firebaseUser } = useUser();
   const firestore = useFirestore();
 
-  const userDocRef = firebaseUser ? doc(firestore, 'users', firebaseUser.uid) : null;
+  const userDocRef = useMemo(() => firebaseUser ? doc(firestore, 'users', firebaseUser.uid) : null, [firebaseUser, firestore]);
   const { data: userProfile } = useDoc<UserProfile>(userDocRef);
 
   const handleRedeem = (reward: Reward) => {

@@ -5,11 +5,12 @@ import { useUser, useFirestore, useDoc } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import type { UserProfile } from '@/lib/types';
 import { Skeleton } from './ui/skeleton';
+import { useMemo } from 'react';
 
 export function StreakCounter() {
   const { user: firebaseUser } = useUser();
   const firestore = useFirestore();
-  const userDocRef = firebaseUser ? doc(firestore, 'users', firebaseUser.uid) : null;
+  const userDocRef = useMemo(() => firebaseUser ? doc(firestore, 'users', firebaseUser.uid) : null, [firebaseUser, firestore]);
   const { data: userProfile, loading } = useDoc<UserProfile>(userDocRef);
 
   const dailyStreak = userProfile?.dailyStreak ?? 0;
