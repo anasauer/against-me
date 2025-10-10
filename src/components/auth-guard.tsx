@@ -41,25 +41,26 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   const isLoading = authLoading || (user && userLoading);
 
   useEffect(() => {
-    // Only run logic when all data is loaded
+    // Don't run any logic until all loading is complete
     if (isLoading) {
       return;
     }
 
     const isPublicRoute = publicRoutes.includes(pathname);
     const isWelcomeRoute = pathname === welcomeRoute;
-    
-    // Case 1: User is not logged in
+
+    // If user is not logged in, redirect to login page if not on a public route
     if (!user) {
       if (!isPublicRoute) {
         router.push('/login');
       }
       return;
     }
-
-    // After this point, user is authenticated.
     
-    // Case 2: User document doesn't exist in Firestore yet (e.g., first social login)
+    // At this point, user is logged in.
+
+    // If user document doesn't exist in Firestore yet (e.g., first social login)
+    // Create the document and let the hook refetch. The next effect run will handle redirection.
     if (userData === null) {
       const newUserProfile: UserProfile = {
         name: user.displayName || 'Nuevo Usuario',
@@ -83,14 +84,13 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
             errorEmitter.emit('permission-error', permissionError);
           });
       }
-      // The useDoc hook will refetch and the effect will re-run.
-      // Redirect to welcome page will be handled in the next run.
-      return; 
+      return; // Wait for useDoc to update with the new data
     }
     
-    const hasCompletedOnboarding = userData?.hasCompletedOnboarding;
+    // User exists, now check onboarding status
+    const hasCompletedOnboarding = userData?.hasCompletedOnboarding ?? false;
 
-    // Case 3: User has not completed onboarding
+    // If onboarding is not complete, redirect to welcome page
     if (!hasCompletedOnboarding) {
       if (!isWelcomeRoute) {
         router.push(welcomeRoute);
@@ -98,7 +98,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    // Case 4: User has completed onboarding
+    // If onboarding is complete, redirect from public/welcome routes to home
     if (isPublicRoute || isWelcomeRoute) {
       router.push('/');
     }
@@ -106,28 +106,26 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   }, [user, userData, isLoading, pathname, router, userDocRef]);
 
 
-  // While loading, or if redirection is pending, show the loader.
+  // Render a loader while determining the correct route to prevent content flashing
   if (isLoading) {
     return <Loader />;
   }
-
+  
   const isPublicRoute = publicRoutes.includes(pathname);
   const isWelcomeRoute = pathname === welcomeRoute;
   const hasCompletedOnboarding = userData?.hasCompletedOnboarding;
-
-  // Render a loader if a redirect is imminent to prevent flashing content
-  if (!user && !isPublicRoute) {
-    return <Loader />;
-  }
   
+  // Render a loader if a redirect is imminent
+  if (!user && !isPublicRoute) {
+     return <Loader />;
+  }
   if (user && !hasCompletedOnboarding && !isWelcomeRoute) {
-    return <Loader />;
+     return <Loader />;
+  }
+   if (user && hasCompletedOnboarding && (isPublicRoute || isWelcomeRoute)) {
+     return <Loader />;
   }
 
-  if (user && hasCompletedOnboarding && (isPublicRoute || isWelcomeRoute)) {
-    return <Loader />;
-  }
-
-
+  // If everything is settled, render the children
   return <>{children}</>;
 }
