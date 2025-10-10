@@ -11,7 +11,6 @@ type AppUser = {
   hasCompletedOnboarding?: boolean;
 };
 
-// Define which routes are public and don't require authentication
 const publicRoutes = ['/login', '/signup'];
 const onboardingRoute = '/welcome';
 
@@ -24,74 +23,45 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   const userDocRef = user ? doc(firestore, 'users', user.uid) : null;
   const { data: userData, loading: userLoading } = useDoc<AppUser>(userDocRef);
 
+  const [isVerified, setIsVerified] = useState(false);
   const isLoading = authLoading || (user && userLoading);
 
-  if (isLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-background">
-        <Logo className="w-24 h-24 mb-4 animate-pulse" />
-        <p className="text-muted-foreground flex items-center">
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          Cargando...
-        </p>
-      </div>
-    );
-  }
-
-  const isPublic = publicRoutes.includes(pathname);
-  const isOnboarding = pathname === onboardingRoute;
-
-  // Case 1: User is not logged in
-  if (!user) {
-    if (!isPublic) {
-      router.push('/login');
-      // Return loading indicator while redirecting
-      return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-background">
-          <Logo className="w-24 h-24 mb-4 animate-pulse" />
-          <p className="text-muted-foreground flex items-center">
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Cargando...
-          </p>
-        </div>
-      );
+  useEffect(() => {
+    if (isLoading) {
+      // Still waiting for user data or auth state
+      return;
     }
-    return <>{children}</>;
-  }
 
-  // Case 2: User is logged in
-  const hasCompletedOnboarding = userData?.hasCompletedOnboarding === true;
+    const isPublic = publicRoutes.includes(pathname);
+    const isOnboarding = pathname === onboardingRoute;
+    const hasCompletedOnboarding = userData?.hasCompletedOnboarding === true;
 
-  if (isPublic) {
-    router.push('/');
+    // Determine the redirect path, if any
+    let redirectPath: string | null = null;
+
+    if (!user && !isPublic) {
+      redirectPath = '/login';
+    } else if (user) {
+      if (isPublic) {
+        redirectPath = '/';
+      } else if (!hasCompletedOnboarding && !isOnboarding) {
+        redirectPath = onboardingRoute;
+      } else if (hasCompletedOnboarding && isOnboarding) {
+        redirectPath = '/';
+      }
+    }
+    
+    if (redirectPath) {
+      router.push(redirectPath);
+    } else {
+      // If no redirection is needed, we can show the content
+      setIsVerified(true);
+    }
+  }, [isLoading, user, userData, pathname, router]);
+
+  if (isLoading || !isVerified) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-background">
-        <Logo className="w-24 h-24 mb-4 animate-pulse" />
-        <p className="text-muted-foreground flex items-center">
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          Cargando...
-        </p>
-      </div>
-    );
-  }
-
-  if (!hasCompletedOnboarding && !isOnboarding) {
-    router.push(onboardingRoute);
-    return (
-       <div className="flex flex-col items-center justify-center min-h-screen bg-background">
-        <Logo className="w-24 h-24 mb-4 animate-pulse" />
-        <p className="text-muted-foreground flex items-center">
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          Cargando...
-        </p>
-      </div>
-    );
-  }
-
-  if (hasCompletedOnboarding && isOnboarding) {
-    router.push('/');
-    return (
-       <div className="flex flex-col items-center justify-center min-h-screen bg-background">
         <Logo className="w-24 h-24 mb-4 animate-pulse" />
         <p className="text-muted-foreground flex items-center">
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -101,6 +71,5 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     );
   }
   
-  // If no redirection is needed, show the content
   return <>{children}</>;
 }
