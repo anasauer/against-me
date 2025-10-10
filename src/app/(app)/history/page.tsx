@@ -3,12 +3,9 @@ import { AppHeader } from '@/components/layout/header';
 import { HistoryStats } from '@/components/history-stats';
 import { ChallengeList } from '@/components/challenge-list';
 import { useUser, useFirestore, useCollection } from '@/firebase';
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo } from 'react';
 import { collection, addDoc } from 'firebase/firestore';
 import type { Challenge } from '@/lib/types';
-import { CreateChallengeForm } from '@/components/create-challenge-form';
-import { Button } from '@/components/ui/button';
-import { PlusCircle } from 'lucide-react';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
@@ -65,18 +62,12 @@ export default function HistoryPage() {
         />
         <div className="flex justify-between items-center">
             <h2 className="text-2xl font-bold font-headline">Retos Completados</h2>
-             <CreateChallengeForm onChallengeCreated={handleChallengeCreated}>
-                <Button className="bg-accent text-accent-foreground hover:bg-accent/90">
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    Crear Reto
-                </Button>
-            </CreateChallengeForm>
         </div>
         <ChallengeList
           title="Retos Completados"
           challenges={completedChallenges}
           loading={loading}
-          showAddButton={false}
+          onChallengeCreated={handleChallengeCreated}
           showDeleteButton={false}
         />
       </main>

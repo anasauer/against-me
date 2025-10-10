@@ -1,4 +1,3 @@
-
 'use client';
 import {
   Card,
@@ -18,19 +17,22 @@ import { useUser, useFirestore } from '@/firebase';
 import { doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import { CreateChallengeForm } from './create-challenge-form';
 
 export function ChallengeList({
   title,
   challenges,
   loading,
-  showAddButton = true,
   showDeleteButton = true,
+  onChallengeCreated,
 }: {
   title: string;
   challenges: Challenge[];
   loading: boolean;
-  showAddButton?: boolean;
   showDeleteButton?: boolean;
+  onChallengeCreated: (
+    challenge: Omit<Challenge, 'id' | 'isCompleted' | 'userId'>
+  ) => void;
 }) {
   const { toast } = useToast();
   const { user } = useUser();
@@ -38,8 +40,12 @@ export function ChallengeList({
 
   const handleToggle = (challengeId: string, isCompleted: boolean) => {
     if (!user) return;
-    const challengeRef = doc(firestore, `users/${user.uid}/challenges`, challengeId);
-    const challenge = challenges.find(c => c.id === challengeId);
+    const challengeRef = doc(
+      firestore,
+      `users/${user.uid}/challenges`,
+      challengeId
+    );
+    const challenge = challenges.find((c) => c.id === challengeId);
     const updatedData = { isCompleted: !isCompleted };
 
     updateDoc(challengeRef, updatedData)
@@ -63,7 +69,11 @@ export function ChallengeList({
 
   const handleDelete = (challengeId: string) => {
     if (!user) return;
-    const challengeRef = doc(firestore, `users/${user.uid}/challenges`, challengeId);
+    const challengeRef = doc(
+      firestore,
+      `users/${user.uid}/challenges`,
+      challengeId
+    );
     deleteDoc(challengeRef)
       .then(() => {
         toast({
@@ -92,25 +102,29 @@ export function ChallengeList({
           <div className="grid gap-1">
             <CardTitle>{title}</CardTitle>
             <CardDescription>
-              {loading ? 'Cargando...' : `${completedCount} de ${challenges.length} completados.`}
+              {loading
+                ? 'Cargando...'
+                : `${completedCount} de ${challenges.length} completados.`}
             </CardDescription>
           </div>
-          {showAddButton && (
-            <Button size="sm" className="bg-accent text-accent-foreground hover:bg-accent/90">
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Nuevo Reto
-            </Button>
-          )}
         </div>
         <Progress value={progress} className="mt-2" />
       </CardHeader>
       <CardContent className="space-y-2">
         {loading ? (
-            <div className="flex justify-center items-center h-24">
-                <Loader2 className="h-6 w-6 animate-spin" />
-            </div>
+          <div className="flex justify-center items-center h-24">
+            <Loader2 className="h-6 w-6 animate-spin" />
+          </div>
         ) : challenges.length === 0 ? (
-            <p className="text-muted-foreground text-center py-4">No hay retos aquí todavía. ¡Crea uno nuevo!</p>
+          <div className="text-center text-muted-foreground py-4 space-y-4">
+             <p>No hay retos aquí todavía.</p>
+             <CreateChallengeForm onChallengeCreated={onChallengeCreated}>
+                <Button className="bg-accent text-accent-foreground hover:bg-accent/90">
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    ¡Crea uno nuevo!
+                </Button>
+            </CreateChallengeForm>
+          </div>
         ) : (
           challenges.map((challenge) => (
             <div
