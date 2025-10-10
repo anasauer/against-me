@@ -25,6 +25,7 @@ export function ChallengeList({
   loading,
   showDeleteButton = true,
   onChallengeCreated,
+  showAddButton = true,
 }: {
   title: string;
   challenges: Challenge[];
@@ -33,6 +34,7 @@ export function ChallengeList({
   onChallengeCreated: (
     challenge: Omit<Challenge, 'id' | 'isCompleted' | 'userId'>
   ) => void;
+  showAddButton?: boolean,
 }) {
   const { toast } = useToast();
   const { user } = useUser();
@@ -118,12 +120,14 @@ export function ChallengeList({
         ) : challenges.length === 0 ? (
           <div className="text-center text-muted-foreground py-4 space-y-4">
              <p>No hay retos aquí todavía.</p>
-             <CreateChallengeForm onChallengeCreated={onChallengeCreated}>
-                <Button className="bg-accent text-accent-foreground hover:bg-accent/90">
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    ¡Crea uno nuevo!
-                </Button>
-            </CreateChallengeForm>
+             {showAddButton && (
+                <CreateChallengeForm onChallengeCreated={onChallengeCreated}>
+                    <Button className="bg-accent text-accent-foreground hover:bg-accent/90">
+                        <PlusCircle className="mr-2 h-4 w-4" />
+                        ¡Crea uno nuevo!
+                    </Button>
+                </CreateChallengeForm>
+             )}
           </div>
         ) : (
           challenges.map((challenge) => (

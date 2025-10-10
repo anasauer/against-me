@@ -137,6 +137,7 @@ function HomePageContent() {
               title="Retos de Hoy"
               challenges={todaysChallenges}
               loading={challengesLoading}
+              onChallengeCreated={() => {}}
             />
           </div>
           <div className="space-y-6">
