@@ -19,6 +19,7 @@ import {
   History,
   Settings,
   UserPlus,
+  User,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useUser } from '@/firebase';
@@ -28,11 +29,11 @@ const menuItems = [
   { href: '/', label: 'Panel', icon: LayoutDashboard },
   { href: '/challenges', label: 'Retos', icon: Target },
   { href: '/rewards', label: 'Recompensas', icon: Gift },
+  { href: '/profile', label: 'Perfil', icon: User },
   { href: '/social', label: 'Social', icon: Users },
   { href: '/add-friend', label: 'Añadir Amigos', icon: UserPlus },
   { href: '/history', label: 'Historial', icon: History },
   { href: '/challenge-friend', label: 'Retar', icon: Swords },
-  { href: '/settings', label: 'Configuración', icon: Settings },
 ];
 
 export function AppSidebar() {
@@ -78,7 +79,7 @@ export function AppSidebar() {
                 {user.displayName || user.email}
               </span>
               <span className="text-xs text-sidebar-foreground/70">
-                Ver Perfil
+                Ver Configuración
               </span>
             </div>
           </Link>
