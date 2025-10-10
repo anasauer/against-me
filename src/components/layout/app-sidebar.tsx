@@ -29,10 +29,10 @@ const menuItems = [
   { href: '/', label: 'Panel', icon: LayoutDashboard },
   { href: '/challenges', label: 'Retos', icon: Target },
   { href: '/rewards', label: 'Recompensas', icon: Gift },
+  { href: '/challenge-friend', label: 'Retar', icon: Swords },
   { href: '/social', label: 'Social', icon: Users },
   { href: '/add-friend', label: 'Añadir Amigos', icon: UserPlus },
   { href: '/history', label: 'Historial', icon: History },
-  { href: '/challenge-friend', label: 'Retar', icon: Swords },
   { href: '/profile', label: 'Perfil', icon: User },
 ];
 
@@ -51,16 +51,29 @@ export function AppSidebar() {
         <SidebarMenu>
           {menuItems.map((item) => (
             <SidebarMenuItem key={item.label}>
-              <SidebarMenuButton
-                asChild
-                isActive={pathname === item.href}
-                tooltip={item.label}
-              >
-                <Link href={item.href}>
-                  <item.icon />
-                  <span>{item.label}</span>
-                </Link>
-              </SidebarMenuButton>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={pathname === item.href}
+                      tooltip={item.label}
+                    >
+                      <Link href={item.href}>
+                        <item.icon />
+                        <span>{item.label}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </TooltipTrigger>
+                  <TooltipContent
+                    side="right"
+                    align="center"
+                    className="md:hidden"
+                  >
+                    {item.label}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
