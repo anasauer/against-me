@@ -46,45 +46,34 @@ export function AppSidebar() {
   const { user } = useUser();
 
   return (
-    <TooltipProvider>
-      <Sidebar>
-        <SidebarHeader>
-          <div className="flex items-center justify-center h-24 w-24 mx-auto">
-            <SidebarLogo className="w-24 h-24" />
-          </div>
-        </SidebarHeader>
-        <SidebarContent>
-          <SidebarMenu>
-            {menuItems.map((item) => (
-              <SidebarMenuItem key={item.label}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Link href={item.href} passHref legacyBehavior>
-                      <SidebarMenuButton
-                        as="a"
-                        isActive={pathname === item.href}
-                        tooltip={item.label}
-                      >
-                        <item.icon />
-                        <span>{item.label}</span>
-                      </SidebarMenuButton>
-                    </Link>
-                  </TooltipTrigger>
-                  <TooltipContent
-                    side="right"
-                    align="center"
-                    className="md:hidden"
-                  >
-                    {item.label}
-                  </TooltipContent>
-                </Tooltip>
-              </SidebarMenuItem>
-            ))}
-          </SidebarMenu>
-        </SidebarContent>
-        <SidebarFooter>
+    <Sidebar>
+      <SidebarHeader>
+        <div className="flex items-center justify-center h-24 w-24 mx-auto">
+          <SidebarLogo className="w-24 h-24" />
+        </div>
+      </SidebarHeader>
+      <SidebarContent>
+        <SidebarMenu>
+          {menuItems.map((item) => (
+            <SidebarMenuItem key={item.label}>
+              <Link href={item.href} passHref>
+                <SidebarMenuButton
+                  as="a"
+                  isActive={pathname === item.href}
+                  tooltip={item.label}
+                >
+                  <item.icon />
+                  <span>{item.label}</span>
+                </SidebarMenuButton>
+              </Link>
+            </SidebarMenuItem>
+          ))}
+        </SidebarMenu>
+      </SidebarContent>
+      <SidebarFooter>
+        <Link href="/settings">
           {user ? (
-            <Link href="/settings" className="flex items-center gap-3">
+            <div className="flex items-center gap-3">
               <Avatar>
                 {user.photoURL && <AvatarImage src={user.photoURL} />}
                 <AvatarFallback>
@@ -99,10 +88,10 @@ export function AppSidebar() {
                   Ver Configuración
                 </span>
               </div>
-            </Link>
+            </div>
           ) : null}
-        </SidebarFooter>
-      </Sidebar>
-    </TooltipProvider>
+        </Link>
+      </SidebarFooter>
+    </Sidebar>
   );
 }
