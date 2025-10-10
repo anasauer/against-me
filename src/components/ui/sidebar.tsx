@@ -566,6 +566,12 @@ const SidebarMenuButton = React.forwardRef<
         {...props}
       />
     )
+    
+    // If it is a child, we can't wrap it in a tooltip.
+    if (asChild) {
+      return button;
+    }
+
 
     if (!tooltip) {
       return button
