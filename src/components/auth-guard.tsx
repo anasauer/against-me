@@ -4,7 +4,7 @@ import { useUser, useFirestore, useDoc } from '@/firebase';
 import { usePathname, useRouter } from 'next/navigation';
 import { Logo } from './logo';
 import { Loader2 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import { doc } from 'firebase/firestore';
 import type { UserProfile } from '@/lib/types';
 
@@ -35,12 +35,12 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   );
   const { data: userData, loading: userLoading } = useDoc<UserProfile>(userDocRef);
 
-  const isLoading = authLoading || userLoading;
-  const [isVerified, setIsVerified] = useState(false);
+  const isLoading = authLoading || (user && userLoading);
 
   useEffect(() => {
+    // Wait until loading is complete before making routing decisions
     if (isLoading) {
-      return; // Don't do anything until all data is loaded
+      return; 
     }
 
     const isPublicRoute = publicRoutes.includes(pathname);
@@ -57,11 +57,12 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     } else {
       // User is logged in.
       if (!hasCompletedOnboarding) {
+        // User has not completed onboarding, must be on welcome route
         if (!isWelcomeRoute) {
           targetRoute = welcomeRoute;
         }
       } else {
-        // User has completed onboarding.
+        // User has completed onboarding, should not be on public or welcome routes
         if (isPublicRoute || isWelcomeRoute) {
           targetRoute = '/';
         }
@@ -70,14 +71,28 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
 
     if (targetRoute && pathname !== targetRoute) {
       router.push(targetRoute);
-    } else {
-      // If no redirection is needed, we can show the content.
-      setIsVerified(true);
     }
   }, [user, userData, isLoading, pathname, router]);
 
-  if (!isVerified) {
+  // While loading, show the loader to prevent content flash
+  if (isLoading) {
     return <Loader />;
+  }
+  
+  // Prevent rendering children if a redirection is pending
+  const isPublicRoute = publicRoutes.includes(pathname);
+  const isWelcomeRoute = pathname === welcomeRoute;
+
+  if (!user && !isPublicRoute) {
+    return <Loader />;
+  }
+
+  if (user && !userData?.hasCompletedOnboarding && !isWelcomeRoute) {
+     return <Loader />;
+  }
+
+  if (user && userData?.hasCompletedOnboarding && (isPublicRoute || isWelcomeRoute)) {
+     return <Loader />;
   }
 
   return <>{children}</>;
