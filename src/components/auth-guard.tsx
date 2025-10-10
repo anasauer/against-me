@@ -41,38 +41,43 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (isLoading) {
-      return;
+      return; // No hacer nada hasta que todo esté cargado
     }
 
     const isPublic = publicRoutes.includes(pathname);
     const isOnboarding = pathname === onboardingRoute;
-
+    
     let targetRoute: string | null = null;
 
-    if (user) {
+    if (!user) {
+      // Si no hay usuario, debe estar en una ruta pública
+      if (!isPublic) {
+        targetRoute = '/login';
+      }
+    } else {
+      // Si hay usuario, comprobar el estado de onboarding
       const hasCompletedOnboarding = userData?.hasCompletedOnboarding === true;
+
       if (hasCompletedOnboarding) {
-        if (isPublic || isOnboarding) {
+        // Si ya completó el onboarding, no debe estar en welcome ni en rutas públicas
+        if (isOnboarding || isPublic) {
           targetRoute = '/';
         }
       } else {
+        // Si no ha completado el onboarding, debe estar en welcome
         if (!isOnboarding) {
           targetRoute = onboardingRoute;
         }
-      }
-    } else {
-      if (!isPublic) {
-        targetRoute = '/login';
       }
     }
 
     if (targetRoute && pathname !== targetRoute) {
       router.push(targetRoute);
     } else {
+      // Si ya estamos en la ruta correcta, o no se necesita redirección, verificamos y renderizamos
       setIsVerified(true);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoading, user, userData, pathname]);
+  }, [isLoading, user, userData, pathname, router]);
 
   if (!isVerified) {
     return <Loader />;
