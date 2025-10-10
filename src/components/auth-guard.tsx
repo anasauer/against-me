@@ -2,7 +2,7 @@
 
 import { useUser, useFirestore, useDoc } from '@/firebase';
 import { useRouter, usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Logo } from './logo';
 import { doc } from 'firebase/firestore';
 import { Loader2 } from 'lucide-react';
@@ -26,38 +26,32 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   const isLoading = authLoading || (user && userLoading);
 
   useEffect(() => {
-    // Solo ejecutar la lógica cuando la carga haya terminado.
     if (isLoading) {
-      return;
+      return; // No hagas nada mientras se carga.
     }
 
     const isPublic = publicRoutes.includes(pathname);
     const isOnboarding = pathname === onboardingRoute;
 
+    // Lógica de redirección después de que el estado se haya estabilizado.
     if (user) {
-      // Usuario autenticado
       const hasCompletedOnboarding = userData?.hasCompletedOnboarding === true;
 
-      if (hasCompletedOnboarding) {
-        if (isPublic || isOnboarding) {
-          router.push('/');
-        }
-      } else {
-        if (!isOnboarding) {
-          router.push(onboardingRoute);
-        }
+      if (!hasCompletedOnboarding && !isOnboarding) {
+        router.push(onboardingRoute);
+      } else if (hasCompletedOnboarding && (isPublic || isOnboarding)) {
+        router.push('/');
       }
     } else {
-      // No hay usuario
       if (!isPublic) {
         router.push('/login');
       }
     }
   }, [isLoading, user, userData, pathname, router]);
 
-  // Mostrar el cargador mientras se determina el estado.
+  // Renderiza un cargador global mientras se resuelve la autenticación y la redirección
   if (isLoading) {
-    return (
+     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-background">
         <Logo className="w-24 h-24 mb-4 animate-pulse" />
         <p className="text-muted-foreground flex items-center">
@@ -68,38 +62,26 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // Lógica para determinar si mostrar el contenido o el cargador durante la redirección
+  // Lógica para evitar un parpadeo de contenido incorrecto mientras se redirige
   const isPublic = publicRoutes.includes(pathname);
   const isOnboarding = pathname === onboardingRoute;
+  let shouldRenderChildren = true;
+
   if (user) {
-    const hasCompletedOnboarding = userData?.hasCompletedOnboarding === true;
-    if (hasCompletedOnboarding && (isPublic || isOnboarding)) {
-       // Estamos a punto de redirigir a '/', mostramos el loader
-       return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-background">
-          <Logo className="w-24 h-24 mb-4 animate-pulse" />
-          <p className="text-muted-foreground flex items-center">
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Cargando...
-          </p>
-        </div>
-      );
+     const hasCompletedOnboarding = userData?.hasCompletedOnboarding === true;
+      if (!hasCompletedOnboarding && !isOnboarding) {
+        shouldRenderChildren = false;
+      } else if (hasCompletedOnboarding && (isPublic || isOnboarding)) {
+        shouldRenderChildren = false;
+      }
+  } else {
+    if (!isPublic) {
+      shouldRenderChildren = false;
     }
-    if (!hasCompletedOnboarding && !isOnboarding) {
-      // Estamos a punto de redirigir a '/welcome', mostramos el loader
-       return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-background">
-          <Logo className="w-24 h-24 mb-4 animate-pulse" />
-          <p className="text-muted-foreground flex items-center">
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Cargando...
-          </p>
-        </div>
-      );
-    }
-  } else if (!isPublic) {
-    // Estamos a punto de redirigir a '/login', mostramos el loader
-    return (
+  }
+
+  if (!shouldRenderChildren) {
+     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-background">
         <Logo className="w-24 h-24 mb-4 animate-pulse" />
         <p className="text-muted-foreground flex items-center">
@@ -109,7 +91,6 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       </div>
     );
   }
-
-  // Si no hay redirección pendiente, mostrar el contenido
+  
   return <>{children}</>;
 }
