@@ -1,3 +1,4 @@
+
 import { getPlaceholderImage } from './placeholder-images';
 
 export type Challenge = {
@@ -75,13 +76,13 @@ export const challenges: Challenge[] = [
 export const receivedChallenges: ReceivedChallenge[] = [
   {
     id: 'rc1',
-    title: 'Ganarme en una partida de ajedrez',
+    title: '¡Completa tu primer reto!',
     from: {
-      name: 'Jessica',
-      avatar: getPlaceholderImage('jessica-avatar')?.imageUrl ?? '',
-      avatarHint: getPlaceholderImage('jessica-avatar')?.imageHint ?? 'profile picture',
+      name: 'Questify',
+      avatar: getPlaceholderImage('questify-avatar')?.imageUrl ?? '',
+      avatarHint: getPlaceholderImage('questify-avatar')?.imageHint ?? 'app logo',
     },
-    reward: 'Te invito a cenar',
+    reward: '150 puntos de bonificación',
   },
 ];
 

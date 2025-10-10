@@ -19,6 +19,12 @@
       "imageHint": "profile picture"
     },
     {
+      "id": "questify-avatar",
+      "description": "Questify app avatar",
+      "imageUrl": "https://picsum.photos/seed/questify/40/40",
+      "imageHint": "app logo"
+    },
+    {
       "id": "mark-avatar",
       "description": "Mark's avatar",
       "imageUrl": "https://picsum.photos/seed/mark/40/40",
