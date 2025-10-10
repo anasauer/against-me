@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "show-domain": "echo \"Copia y pega este dominio en Firebase -> https://$WEB_HOST\""
+    "show-domain": "echo \"\n\n✅ Authorize this domain in Firebase Authentication:\n\n   https://$WEB_HOST\n\n\""
   },
   "dependencies": {
     "@hookform/resolvers": "^4.1.3",
