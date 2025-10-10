@@ -23,6 +23,7 @@ import { FirestorePermissionError } from '@/firebase/errors';
 type FoundUser = {
   id: string;
   name: string;
+  email: string;
   avatar: string;
 };
 
@@ -32,7 +33,7 @@ export default function AddFriendPage() {
   const { toast } = useToast();
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<FoundUser[]>([]);
+  const [searchResults, setSetarchResults] = useState<FoundUser[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
 
@@ -42,15 +43,14 @@ export default function AddFriendPage() {
 
     setLoading(true);
     setSearched(true);
-    setSearchResults([]);
+    setSetarchResults([]);
 
     try {
       const usersRef = collection(firestore, 'users');
-      // Simple search by name. In a real app, you might use a more advanced search service.
+      // Search for a user with the exact email address
       const q = query(
         usersRef,
-        where('name', '>=', searchQuery),
-        where('name', '<=', searchQuery + '\uf8ff')
+        where('email', '==', searchQuery.trim().toLowerCase())
       );
 
       const querySnapshot = await getDocs(q);
@@ -62,11 +62,12 @@ export default function AddFriendPage() {
           users.push({
             id: doc.id,
             name: data.name,
+            email: data.email,
             avatar: data.avatar,
           });
         }
       });
-      setSearchResults(users);
+      setSetarchResults(users);
     } catch (error) {
       console.error('Error searching for users:', error);
       toast({
@@ -122,8 +123,8 @@ export default function AddFriendPage() {
           <CardContent>
             <form onSubmit={handleSearch} className="flex gap-2 mb-6">
               <Input
-                type="search"
-                placeholder="Buscar por nombre..."
+                type="email"
+                placeholder="Buscar por correo electrónico..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -141,7 +142,7 @@ export default function AddFriendPage() {
 
               {!loading && searched && searchResults.length === 0 && (
                 <p className="text-center text-muted-foreground">
-                  No se encontraron usuarios con ese nombre.
+                  No se encontraron usuarios con ese correo.
                 </p>
               )}
 
@@ -155,7 +156,10 @@ export default function AddFriendPage() {
                       <AvatarImage src={user.avatar} />
                       <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
                     </Avatar>
-                    <span className="font-medium">{user.name}</span>
+                    <div>
+                      <span className="font-medium">{user.name}</span>
+                      <p className="text-sm text-muted-foreground">{user.email}</p>
+                    </div>
                   </div>
                   <Button
                     size="sm"

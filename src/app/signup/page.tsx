@@ -66,6 +66,7 @@ export default function SignupPage() {
       const userDocRef = doc(firestore, 'users', newUser.uid);
       const userData = {
         name: name,
+        email: newUser.email, // Save the email
         avatar: '',
         points: 0,
         dailyStreak: 0,

@@ -9,6 +9,11 @@
           "type": "string",
           "description": "The user's display name."
         },
+        "email": {
+          "type": "string",
+          "description": "The user's email address.",
+          "format": "email"
+        },
         "avatar": {
           "type": "string",
           "description": "URL of the user's avatar image."
@@ -34,7 +39,8 @@
         }
       },
       "required": [
-        "name"
+        "name",
+        "email"
       ]
     },
     "challenge": {
