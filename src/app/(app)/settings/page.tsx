@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { AppHeader } from '@/components/layout/header';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -15,14 +15,14 @@ import { doc, setDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Loader2 } from 'lucide-react';
 
 type AppUser = {
   name: string;
   avatar: string;
 };
 
-export default function SettingsPage() {
+function SettingsPageContent() {
   const router = useRouter();
   const auth = useAuth();
   const firestore = useFirestore();
@@ -80,9 +80,19 @@ export default function SettingsPage() {
       <div className="flex flex-col h-full">
         <AppHeader title="Configuración" />
         <main className="flex-1 p-4 md:p-6 space-y-6 max-w-4xl mx-auto">
-           <Skeleton className="h-40 w-full" />
-           <Skeleton className="h-40 w-full" />
-           <Skeleton className="h-24 w-full" />
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Perfil</CardTitle>
+              </CardHeader>
+              <CardContent className="flex items-center gap-6">
+                 <Loader2 className="w-20 h-20 animate-spin" />
+                <div className='flex-1'>
+                    <h3 className="text-xl font-semibold">Cargando...</h3>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </main>
       </div>
     );
@@ -165,4 +175,28 @@ export default function SettingsPage() {
       </main>
     </div>
   );
+}
+
+
+export default function SettingsPage() {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // Render a loader or skeleton on the server and initial client render
+  if (!isClient) {
+    return (
+       <div className="flex flex-col h-full">
+        <AppHeader title="Configuración" />
+        <main className="flex-1 p-4 md:p-6 space-y-6 max-w-4xl mx-auto">
+          <Loader2 className="w-8 h-8 animate-spin" />
+        </main>
+      </div>
+    );
+  }
+
+  // Once mounted on the client, render the full page content
+  return <SettingsPageContent />;
 }

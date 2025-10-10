@@ -45,34 +45,30 @@ export function AppSidebar() {
   const pathname = usePathname();
   const { user } = useUser();
 
-  if (pathname === '/settings') {
-    return null; // Don't render sidebar on settings page
-  }
-
   return (
-    <Sidebar>
-      <SidebarHeader>
-        <div className="flex items-center justify-center h-24 w-24 mx-auto">
-          <SidebarLogo className="w-24 h-24" />
-        </div>
-      </SidebarHeader>
-      <SidebarContent>
-        <SidebarMenu>
-          {menuItems.map((item) => (
-            <SidebarMenuItem key={item.label}>
-              <TooltipProvider>
+    <TooltipProvider>
+      <Sidebar>
+        <SidebarHeader>
+          <div className="flex items-center justify-center h-24 w-24 mx-auto">
+            <SidebarLogo className="w-24 h-24" />
+          </div>
+        </SidebarHeader>
+        <SidebarContent>
+          <SidebarMenu>
+            {menuItems.map((item) => (
+              <SidebarMenuItem key={item.label}>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={pathname === item.href}
-                      tooltip={item.label}
-                    >
-                      <Link href={item.href}>
+                    <Link href={item.href} passHref legacyBehavior>
+                      <SidebarMenuButton
+                        as="a"
+                        isActive={pathname === item.href}
+                        tooltip={item.label}
+                      >
                         <item.icon />
                         <span>{item.label}</span>
-                      </Link>
-                    </SidebarMenuButton>
+                      </SidebarMenuButton>
+                    </Link>
                   </TooltipTrigger>
                   <TooltipContent
                     side="right"
@@ -82,31 +78,31 @@ export function AppSidebar() {
                     {item.label}
                   </TooltipContent>
                 </Tooltip>
-              </TooltipProvider>
-            </SidebarMenuItem>
-          ))}
-        </SidebarMenu>
-      </SidebarContent>
-      <SidebarFooter>
-        {user ? (
-          <Link href="/settings" className="flex items-center gap-3">
-            <Avatar>
-              {user.photoURL && <AvatarImage src={user.photoURL} />}
-              <AvatarFallback>
-                {user.displayName?.charAt(0) || user.email?.charAt(0) || 'U'}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex flex-col">
-              <span className="font-semibold text-sidebar-foreground">
-                {user.displayName || user.email}
-              </span>
-              <span className="text-xs text-sidebar-foreground/70">
-                Ver Configuración
-              </span>
-            </div>
-          </Link>
-        ) : null}
-      </SidebarFooter>
-    </Sidebar>
+              </SidebarMenuItem>
+            ))}
+          </SidebarMenu>
+        </SidebarContent>
+        <SidebarFooter>
+          {user ? (
+            <Link href="/settings" className="flex items-center gap-3">
+              <Avatar>
+                {user.photoURL && <AvatarImage src={user.photoURL} />}
+                <AvatarFallback>
+                  {user.displayName?.charAt(0) || user.email?.charAt(0) || 'U'}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex flex-col">
+                <span className="font-semibold text-sidebar-foreground">
+                  {user.displayName || user.email}
+                </span>
+                <span className="text-xs text-sidebar-foreground/70">
+                  Ver Configuración
+                </span>
+              </div>
+            </Link>
+          ) : null}
+        </SidebarFooter>
+      </Sidebar>
+    </TooltipProvider>
   );
 }

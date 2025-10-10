@@ -1,12 +1,10 @@
 'use client';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Coins, X } from 'lucide-react';
+import { Coins } from 'lucide-react';
 import { useUser, useFirestore, useDoc } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { Skeleton } from '../ui/skeleton';
-import { usePathname, useRouter } from 'next/navigation';
-import { Button } from '../ui/button';
 
 type AppUser = {
   points: number;
@@ -15,10 +13,6 @@ type AppUser = {
 export function AppHeader({ title }: { title: string }) {
   const { user } = useUser();
   const firestore = useFirestore();
-  const pathname = usePathname();
-  const router = useRouter();
-
-  const isSettingsPage = pathname === '/settings';
 
   const userDocRef = user ? doc(firestore, 'users', user.uid) : null;
   const { data: appUser, loading: userLoading } = useDoc<AppUser>(userDocRef);
@@ -27,13 +21,7 @@ export function AppHeader({ title }: { title: string }) {
 
   return (
     <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-sm sm:px-6">
-      {isSettingsPage ? (
-        <Button variant="ghost" size="icon" onClick={() => router.push('/')} aria-label="Cerrar">
-          <X className="h-6 w-6" />
-        </Button>
-      ) : (
-        <SidebarTrigger className="md:hidden" />
-      )}
+      <SidebarTrigger className="md:hidden" />
       <h1 className="text-xl font-semibold tracking-tight font-headline">
         {title}
       </h1>
