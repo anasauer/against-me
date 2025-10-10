@@ -186,6 +186,7 @@ export default function SettingsPage() {
   }, []);
 
   // Render a loader or skeleton on the server and initial client render
+  // This prevents hydration mismatches.
   if (!isClient) {
     return (
        <div className="flex flex-col h-full">
