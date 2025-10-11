@@ -10,6 +10,7 @@ import type { UserProfile } from '@/lib/types';
 import { FriendRequests } from '@/components/friend-requests';
 import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Loader2 } from 'lucide-react';
 
 function FriendListItem({ friend }: { friend: UserProfile & { id: string } }) {
   if (!friend) {
@@ -77,32 +78,13 @@ function FriendList() {
 }
 
 function SocialPageContent() {
-  const { user } = useUser();
+  const { user, loading } = useUser();
 
-  if (!user) {
+  if (loading) {
     return (
-       <div className="grid md:grid-cols-3 gap-6">
-        <div className="md:col-span-2 space-y-6">
-           <Card>
-              <CardHeader>
-                <Skeleton className="h-6 w-1/2" />
-              </CardHeader>
-              <CardContent>
-                <Skeleton className="h-10 w-full" />
-              </CardContent>
-            </Card>
-        </div>
-         <div className="space-y-6">
-           <Card>
-              <CardHeader>
-                 <Skeleton className="h-6 w-1/2" />
-              </CardHeader>
-              <CardContent>
-                <Skeleton className="h-10 w-full" />
-              </CardContent>
-            </Card>
-        </div>
-      </div>
+       <div className="flex justify-center items-center h-full">
+         <Loader2 className="w-8 h-8 animate-spin" />
+       </div>
     );
   }
 
