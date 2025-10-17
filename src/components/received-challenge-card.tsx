@@ -20,8 +20,8 @@ export function ReceivedChallengeCard({
   onDecline,
 }: {
   challenge: ReceivedChallenge;
-  onAccept: (challenge: ReceivedChallenge) => void;
-  onDecline: (challengeId: string) => void;
+  onAccept: () => void;
+  onDecline: () => void;
 }) {
   return (
     <Card className="bg-accent/20 border-accent">
@@ -50,11 +50,11 @@ export function ReceivedChallengeCard({
         </p>
       </CardContent>
       <CardFooter className="gap-3">
-        <Button className="w-full" onClick={() => onAccept(challenge)}>
+        <Button className="w-full" onClick={() => onAccept()}>
           <Check className="mr-2 h-4 w-4" />
           Aceptar
         </Button>
-        <Button variant="outline" className="w-full" onClick={() => onDecline(challenge.id)}>
+        <Button variant="outline" className="w-full" onClick={() => onDecline()}>
           <X className="mr-2 h-4 w-4" />
           Rechazar
         </Button>

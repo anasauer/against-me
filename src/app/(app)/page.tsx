@@ -16,7 +16,11 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import type { UserProfile, Challenge } from '@/lib/types';
+import type { ReceivedChallenge as ReceivedChallengeType } from '@/lib/data';
+import { ReceivedChallengeCard } from '@/components/received-challenge-card';
 
+// This is a flag that persists across re-renders but not page reloads
+let hasShownWelcomeChallenge = false;
 
 function HomePageContent() {
   const { user } = useUser();
@@ -24,7 +28,7 @@ function HomePageContent() {
   const { toast } = useToast();
 
   const userDocRef = useMemo(() => (user ? doc(firestore, 'users', user.uid) : null), [user, firestore]);
-  const { data: userProfile, loading: userProfileLoading } = useDoc<UserProfile>(userDocRef);
+  const { data: userProfile } = useDoc<UserProfile>(userDocRef);
 
   // Fetch challenges from Firestore
   const challengesQuery = useMemo(() => {
@@ -35,6 +39,52 @@ function HomePageContent() {
     useCollection<Challenge>(challengesQuery);
   
   const [shareActivity, setShareActivity] = useState(false);
+  const [showWelcomeCard, setShowWelcomeCard] = useState(false);
+  
+  // Effect to show the welcome card for new users
+  useEffect(() => {
+    // We check if the user profile is loaded, has *just* completed onboarding,
+    // and if we haven't already shown the card in this session.
+    if (userProfile && userProfile.hasCompletedOnboarding && !hasShownWelcomeChallenge) {
+      setShowWelcomeCard(true);
+      hasShownWelcomeChallenge = true; // Mark as shown for this session
+    }
+  }, [userProfile]);
+
+  const welcomeChallenge: ReceivedChallengeType = {
+    id: 'welcome-challenge',
+    title: '¡Completa tu primer reto!',
+    from: {
+      name: 'AgainstMe',
+      avatar: '',
+      avatarHint: 'app logo',
+    },
+    reward: '10 puntos',
+  };
+
+  const handleAcceptWelcomeChallenge = () => {
+    const newChallengeData = {
+      title: welcomeChallenge.title,
+      description: 'Reto de bienvenida de AgainstMe.',
+      points: 10,
+      type: 'special' as const,
+    };
+    handleAddChallenge(newChallengeData);
+    setShowWelcomeCard(false);
+     toast({
+      title: '¡Reto Aceptado!',
+      description: 'El reto ha sido añadido a tu lista de "Retos de Hoy".',
+    });
+  };
+
+  const handleDeclineWelcomeChallenge = () => {
+    setShowWelcomeCard(false);
+    toast({
+      title: 'Reto Rechazado',
+      description: 'No te preocupes, ¡hay muchos otros retos por hacer!',
+      variant: 'destructive',
+    });
+  };
 
   const todaysChallenges = useMemo(() => {
     return (
@@ -67,7 +117,6 @@ function HomePageContent() {
       });
   }
 
-
   return (
     <div className="flex flex-col h-full">
       <AppHeader title="Panel" />
@@ -75,7 +124,14 @@ function HomePageContent() {
         <StreakCounter />
 
         <div className="grid md:grid-cols-3 gap-6">
-          <div className="md:col-span-2">
+          <div className="md:col-span-2 space-y-6">
+            {showWelcomeCard && (
+               <ReceivedChallengeCard
+                challenge={welcomeChallenge}
+                onAccept={handleAcceptWelcomeChallenge}
+                onDecline={handleDeclineWelcomeChallenge}
+              />
+            )}
             <ChallengeList
               title="Retos de Hoy"
               challenges={todaysChallenges}

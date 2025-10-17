@@ -53,20 +53,7 @@ export default function WelcomePage() {
       
       const challengesToAdd: Array<Omit<Challenge, 'id'>> = [];
 
-      // 1. Add the welcome challenge from AgainstMe
-      const welcomeChallengeRef = doc(challengesColRef);
-      const welcomeChallengeData = {
-        title: '¡Completa tu primer reto!',
-        description: 'Reto de bienvenida de AgainstMe. Recompensa: 10 puntos.',
-        points: 10,
-        type: 'special' as const,
-        isCompleted: false,
-        userId: firebaseUser.uid,
-      };
-      challengesToAdd.push(welcomeChallengeData);
-      batch.set(welcomeChallengeRef, welcomeChallengeData);
-      
-      // 2. Add user-selected challenges
+      // 1. Add user-selected challenges
       suggestedChallenges
         .filter((c) => selectedChallenges.has(c.id))
         .forEach((challenge) => {
@@ -83,8 +70,8 @@ export default function WelcomePage() {
           batch.set(newChallengeRef, challengeData);
         });
       
-      // 3. Mark onboarding as complete
-      batch.set(userDocRef, { hasCompletedOnboarding: true }, { merge: true });
+      // 2. Mark onboarding as complete. This will trigger the welcome card on the main page.
+      batch.update(userDocRef, { hasCompletedOnboarding: true });
 
       // Commit all changes at once
       await batch.commit();
