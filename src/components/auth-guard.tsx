@@ -41,93 +41,88 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   const isLoading = authLoading || (user && userLoading);
 
   useEffect(() => {
+    // 1. Wait until all loading is finished before making any decisions.
     if (isLoading) {
-      return; // Wait until all data is loaded
+      return;
     }
 
-    const isPublicRoute = publicRoutes.includes(pathname);
-    const isWelcomeRoute = pathname === welcomeRoute;
+    const isPublic = publicRoutes.includes(pathname);
+    const isWelcome = pathname === welcomeRoute;
 
-    // SCENARIO 1: User is not logged in
+    // 2. If the user is not logged in
     if (!user) {
-      if (!isPublicRoute) {
+      if (!isPublic) {
         router.push('/login');
       }
       return;
     }
 
-    // From here, we know the user is logged in.
+    // From this point, we know the user is logged in.
 
-    // SCENARIO 2: Handle first-time social login (user doc doesn't exist yet)
-    // The useDoc hook will return `null` if the document doesn't exist after loading.
+    // 3. Handle first-time social login (user doc doesn't exist)
     if (userData === null && userDocRef) {
-        const newUserProfile: UserProfile = {
-          name: user.displayName || 'Nuevo Usuario',
-          email: user.email?.toLowerCase() || '',
-          avatar: user.photoURL || '',
-          points: 0,
-          dailyStreak: 0,
-          weeklyStreak: 0,
-          friends: [],
-          hasCompletedOnboarding: false,
-        };
+      const newUserProfile: UserProfile = {
+        name: user.displayName || 'Nuevo Usuario',
+        email: user.email?.toLowerCase() || '',
+        avatar: user.photoURL || '',
+        points: 0,
+        dailyStreak: 0,
+        weeklyStreak: 0,
+        friends: [],
+        hasCompletedOnboarding: false,
+      };
 
-        // Create the user document
-        setDoc(userDocRef, newUserProfile).catch((error) => {
-           const permissionError = new FirestorePermissionError({
-            path: userDocRef.path,
-            operation: 'create',
-            requestResourceData: newUserProfile,
-          });
-          errorEmitter.emit('permission-error', permissionError);
+      setDoc(userDocRef, newUserProfile).catch((error) => {
+        const permissionError = new FirestorePermissionError({
+          path: userDocRef.path,
+          operation: 'create',
+          requestResourceData: newUserProfile,
         });
-        
-        // After creating the profile, the useDoc hook will re-run and get the new userData.
-        // The logic will then fall through to SCENARIO 3.
-        return;
+        errorEmitter.emit('permission-error', permissionError);
+      });
+      // After creating the profile, the useDoc hook will re-run.
+      // The component will re-render, and the logic will proceed to the next step.
+      // We return here to wait for the re-render.
+      return;
     }
 
-    // SCENARIO 3: User is logged in but hasn't completed onboarding
-    const hasCompletedOnboarding = userData?.hasCompletedOnboarding === true;
-    
+    const hasCompletedOnboarding = userData?.hasCompletedOnboarding;
+
+    // 4. If user is logged in but hasn't completed onboarding
     if (!hasCompletedOnboarding) {
-      if (!isWelcomeRoute) {
-        router.push(welcomeRoute); // Force them to the welcome page
+      if (!isWelcome) {
+        router.push(welcomeRoute);
       }
-      return; // If they are on the welcome page, let them stay.
-    }
-    
-    // SCENARIO 4: User is logged in and has completed onboarding.
-    if (isPublicRoute || isWelcomeRoute) {
-      router.push('/'); // They should not be on login, signup, or welcome pages.
+      return;
     }
 
+    // 5. If user is logged in and has completed onboarding
+    if (isPublic || isWelcome) {
+      router.push('/');
+    }
   }, [user, userData, isLoading, pathname, router, userDocRef]);
+  
+  const isPublic = publicRoutes.includes(pathname);
+  const isWelcome = pathname === welcomeRoute;
 
-  // --- Render Logic ---
-
-  // 1. While loading, always show the loader.
+  // Show a loader while any data is loading to prevent content flashing
   if (isLoading) {
     return <Loader />;
   }
   
-  const isPublicRoute = publicRoutes.includes(pathname);
-  const isWelcomeRoute = pathname === welcomeRoute;
-  const hasCompletedOnboarding = userData?.hasCompletedOnboarding === true;
-
-  // 2. Prevent content flashing during redirects by showing the loader.
-  // If the logic in useEffect is about to trigger a redirect, this will show a loader
-  // instead of the wrong page content for a split second.
-  if (!user && !isPublicRoute) {
+  // Show loader during redirection to prevent flashing incorrect UI
+  if (!user && !isPublic) {
     return <Loader />;
   }
-  if (user && !hasCompletedOnboarding && !isWelcomeRoute) {
-    return <Loader />;
-  }
-  if (user && hasCompletedOnboarding && (isPublicRoute || isWelcomeRoute)) {
+  
+  if (user && !userData?.hasCompletedOnboarding && !isWelcome) {
     return <Loader />;
   }
 
-  // 3. If all checks pass, the user is on the correct page.
+  if (user && userData?.hasCompletedOnboarding && (isPublic || isWelcome)) {
+    return <Loader />;
+  }
+
+  // If all checks pass, render the children
   return <>{children}</>;
 }

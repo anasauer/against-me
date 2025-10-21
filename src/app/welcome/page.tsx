@@ -51,8 +51,6 @@ export default function WelcomePage() {
       const userDocRef = doc(firestore, 'users', firebaseUser.uid);
       const challengesColRef = collection(firestore, `users/${firebaseUser.uid}/challenges`);
       
-      const challengesToAdd: Array<Omit<Challenge, 'id'>> = [];
-
       // 1. Add user-selected challenges
       suggestedChallenges
         .filter((c) => selectedChallenges.has(c.id))
@@ -66,21 +64,20 @@ export default function WelcomePage() {
             isCompleted: false,
             userId: firebaseUser.uid,
           };
-          challengesToAdd.push(challengeData);
           batch.set(newChallengeRef, challengeData);
         });
       
       // 2. Mark onboarding as complete. This will trigger the welcome card on the main page.
       batch.update(userDocRef, { hasCompletedOnboarding: true });
 
-      // Commit all changes at once
-      await batch.commit();
-
-      toast({
-        title: '¡Todo listo!',
-        description: 'Hemos añadido tus primeros retos. ¡A por ellos!',
+      // Commit all changes at once and redirect only upon successful completion.
+      await batch.commit().then(() => {
+        toast({
+          title: '¡Todo listo!',
+          description: 'Hemos añadido tus primeros retos. ¡A por ellos!',
+        });
+        router.push('/');
       });
-      router.push('/');
 
     } catch (error) {
       console.error('Error completing onboarding:', error);
