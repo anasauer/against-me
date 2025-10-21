@@ -10,7 +10,6 @@ import type { UserProfile } from '@/lib/types';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
-
 const publicRoutes = ['/login', '/signup'];
 const welcomeRoute = '/welcome';
 
@@ -36,10 +35,10 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     () => (user ? doc(firestore, 'users', user.uid) : null),
     [user, firestore]
   );
-  
+
   const { data: userData, loading: userLoading } = useDoc<UserProfile>(userDocRef);
 
-  const isLoading = authLoading || (!!user && userLoading);
+  const isLoading = authLoading || (user && userLoading);
 
   useEffect(() => {
     if (isLoading) {
@@ -104,7 +103,6 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     }
 
   }, [user, userData, isLoading, pathname, router, userDocRef]);
-
 
   // --- Render Logic ---
 
