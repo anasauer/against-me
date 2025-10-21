@@ -72,15 +72,15 @@ export default function SignupPage() {
         dailyStreak: 0,
         weeklyStreak: 0,
         friends: [],
-        hasCompletedOnboarding: false, // Explicitly set to false
+        hasCompletedOnboarding: true, // Explicitly set to true to bypass welcome
       };
       
       // Use setDoc to create the document for the new user.
       await setDoc(userDocRef, userData);
 
       toast({ title: '¡Cuenta creada con éxito!' });
-      // After signup, explicitly redirect to the welcome page
-      router.push('/welcome');
+      // After signup, explicitly redirect to the main page
+      router.push('/');
 
     } catch (error: any) {
       console.error(error);

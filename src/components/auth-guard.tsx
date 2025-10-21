@@ -69,7 +69,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
         dailyStreak: 0,
         weeklyStreak: 0,
         friends: [],
-        hasCompletedOnboarding: false,
+        hasCompletedOnboarding: true, // Bypass welcome screen
       };
 
       setDoc(userDocRef, newUserProfile).catch((error) => {
@@ -88,15 +88,15 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
 
     const hasCompletedOnboarding = userData?.hasCompletedOnboarding;
 
-    // 4. If user is logged in but hasn't completed onboarding
-    if (!hasCompletedOnboarding) {
-      if (!isWelcome) {
-        router.push(welcomeRoute);
-      }
-      return;
-    }
+    // 4. If user is logged in but hasn't completed onboarding (LOGIC DEACTIVATED)
+    // if (!hasCompletedOnboarding) {
+    //   if (!isWelcome) {
+    //     router.push(welcomeRoute);
+    //   }
+    //   return;
+    // }
 
-    // 5. If user is logged in and has completed onboarding
+    // 5. If user is logged in and onboarding is complete (or bypassed)
     if (isPublic || isWelcome) {
       router.push('/');
     }
@@ -115,9 +115,10 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     return <Loader />;
   }
   
-  if (user && !userData?.hasCompletedOnboarding && !isWelcome) {
-    return <Loader />;
-  }
+  // This logic is deactivated, but we keep the loader for consistency
+  // if (user && !userData?.hasCompletedOnboarding && !isWelcome) {
+  //   return <Loader />;
+  // }
 
   if (user && userData?.hasCompletedOnboarding && (isPublic || isWelcome)) {
     return <Loader />;
